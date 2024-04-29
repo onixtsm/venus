@@ -1,5 +1,7 @@
 ROOT_DIR:=.
 
+SUDO?=sudo
+
 # Allows me to crosscompile with my main machine
 nopynq:=0
 x86_64:=x86_64
@@ -53,6 +55,9 @@ all: ${LIB_PYNQ} ${LIB_SCPI} ${EXPERIMENTS_BIN} ${BUILD_DIR}/rover
 
 ${BUILD_DIR}/rover: ${SOURCES} ${LIBS_OBJ} ${LIB_PYNQ} ${LIB_SCPI_LIB}
 	$(VERBOSE)${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${MYFLAGS}
+ifeq ($(nopynq), 0)
+		$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
+endif
 
 ${LIBS_OBJ}: ${LIBS}
 	@mkdir -p $(@D)
@@ -62,6 +67,9 @@ rover: ${BUILD_DIR}/rover
 
 ${EXPERIMENTS_BIN}: ${EXPERIMENTS} ${LIBS_OBJ} ${LIB_PYNQ} ${LIB_SCPI_LIB}
 	$(VERBOSE)${CC} -o $@ $< $(filter-out $(wildcard $(<D)/*.c ), $^) ${CFLAGS} ${LDFLAGS} ${MYFLAGS}
+ifeq ($(nopynq), 0)
+		$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
+endif
 
 experiments: ${EXPERIMENTS_BIN}
 exp: experiments
