@@ -53,6 +53,7 @@ EXPERIMENTS_BIN:=$(patsubst $(EXPERIMENTS_DIR)/%.c, $(BUILD_DIR)/%,$(EXPERIMENTS
 
 all: ${LIB_PYNQ} ${LIB_SCPI} ${EXPERIMENTS_BIN} ${BUILD_DIR}/rover 
 
+${LIB_SCPI_LIB}: ${LIB_SCPI}
 ${BUILD_DIR}/rover: ${SOURCES} ${LIBS_OBJ} ${LIB_PYNQ} ${LIB_SCPI_LIB}
 	$(VERBOSE)${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${MYFLAGS}
 ifeq ($(nopynq), 0)
