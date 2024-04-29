@@ -62,7 +62,7 @@ For that you need github account.
  ```
  4. Use `git add .` or `git add [specific files you changed]` that you want to commit to project.
  1. Then use `git commit -m "Descriptive messige which explains changes you made"`.
- 1. Use `git push` to save it on *your* github page. (The very first time it may fail and ask to use `git push --set-upstream origin` (or something like this), then just use it)
+ 1. Use `git push` to save it on *your* github page. (The very first time it may fail and ask to use `git push --set-upstream origin master` (or something like this), then just use it)
  1. Go to you github page. There you will see that github advices you to create pull request. Just make it and then I will be able to review it and give my feedback.
 
 **NOTE**
