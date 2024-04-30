@@ -9,7 +9,7 @@
 #include "gpio.h"
 #include "util.h"
 
-#define IN ADC0
+#define IN IO_A0
 #define S0 IO_A5
 #define S1 IO_A4
 #define S2 IO_A3
@@ -31,13 +31,13 @@ int main(void) {
   printf("GPIO init\n");
 
   gpio_set_level(S0, GPIO_LEVEL_HIGH);
-  gpio_set_level(S1, GPIO_LEVEL_HIGH);
+  gpio_set_level(S1, GPIO_LEVEL_LOW);
 
   gpio_set_level(S2, GPIO_LEVEL_HIGH);
   gpio_set_level(S3, GPIO_LEVEL_LOW);
   printf("Levels set\n");
   struct timeval check, start;
-  float v;
+  int v;
   gettimeofday(&start, NULL);
 
   while (1) {
@@ -45,19 +45,18 @@ int main(void) {
       break;
     }
     
-    v = adc_read_channel(IN);
+    v = gpio_get_level(IN);
 
     gettimeofday(&check, NULL);
     int32_t start_us = start.tv_usec;
     int32_t check_us = check.tv_usec;
-    if (check_us - start_us >= 10) {
-      fprintf(stderr, "%d,%f\n", check_us, v);
+    if (check_us - start_us >= 5) {
+      fprintf(stderr, "%d,%d\n", check_us, v);
       gettimeofday(&start, NULL);
     }
 
   }
 
-  // printf("Freq %lf MHz\n", 1.0 / (double)(stop.tv_usec - start.tv_usec));
 
   gpio_reset();
 
