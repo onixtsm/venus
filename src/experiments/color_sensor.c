@@ -14,6 +14,7 @@
 #define S1 IO_A4
 #define S2 IO_A3
 #define S3 IO_A2
+#define CHECK IO_A1
 
 int main(void) {
   pynq_init();
@@ -25,35 +26,38 @@ int main(void) {
   gpio_set_direction(S1, GPIO_DIR_OUTPUT);
   gpio_set_direction(S2, GPIO_DIR_OUTPUT);
   gpio_set_direction(S3, GPIO_DIR_OUTPUT);
+  gpio_set_direction(CHECK, GPIO_DIR_OUTPUT);
 
   printf("GPIO init\n");
 
   gpio_set_level(S0, GPIO_LEVEL_HIGH);
-  gpio_set_level(S1, GPIO_LEVEL_LOW);
+  gpio_set_level(S1, GPIO_LEVEL_HIGH);
 
   gpio_set_level(S2, GPIO_LEVEL_HIGH);
   gpio_set_level(S3, GPIO_LEVEL_LOW);
   printf("Levels set\n");
-  struct timeval stop, start;
-  int64_t first, other;
-  int exit = 0;
-  while (!exit) {
-    first = adc_read_channel_raw(IN);
-    float c = adc_read_channel(IN);
-    gettimeofday(&start, NULL);
-    do {
-      other = adc_read_channel_raw(IN);
-      if (get_button_state(BUTTON0)) {
-        exit = 1;
-        break;
-      }
-      printf("%f V\n", c);
-    } while (abs(first - other) > 100);
+  struct timeval check, start;
+  float v;
+  gettimeofday(&start, NULL);
+
+  while (1) {
+    if (get_button_state(BUTTON0)) {
+      break;
+    }
     
-    gettimeofday(&stop, NULL);
-    // printf("Freq %lf MHz\n", 1.0 / (double)(stop.tv_usec - start.tv_usec));
-    
+    v = adc_read_channel(IN);
+
+    gettimeofday(&check, NULL);
+    int32_t start_us = start.tv_usec;
+    int32_t check_us = check.tv_usec;
+    if (check_us - start_us >= 10) {
+      fprintf(stderr, "%d,%f\n", check_us, v);
+      gettimeofday(&start, NULL);
+    }
+
   }
+
+  // printf("Freq %lf MHz\n", 1.0 / (double)(stop.tv_usec - start.tv_usec));
 
   gpio_reset();
 
