@@ -19,7 +19,7 @@ DATE=$(shell date "+%Y-%m-%d %H:%M")
 RELEASE_BASENAME=libpynq-${RELEASE}-v${MAJOR}.${MINOR}.${PATCH}
 LABEL="release ${RELEASE} version ${MAJOR}.${MINOR}.${PATCH} of ${DATE}"
 
-CFLAGS:=-I. -Iplatform/ -Ilibrary/ -Iexternal/ -lm -O0 -g3 -ggdb -Wextra -Wall
+CFLAGS:=-I. -Iplatform/ -Ilibrary/ -Iexternal/ -lm -O0 -g3 -ggdb -Wextra -Wall -I
 # when compiling empty library:
 # CFLAGS:=-I. -Iplatform/ -Ilibrary/ -Iexternal/ -lm -O0 -g3 -ggdb
 MYFLAGS:=
@@ -40,36 +40,38 @@ OBJECTS_LIBRARIES:=$(foreach obj,$(LIBRARIES_OBJECTS),${BUILD_DIR}/$(obj))
 
 DIRS:=$(foreach obj,$(LIBRARIES_OBJECTS),${BUILD_DIR}/$(dir $(obj))/)
 
-
 SRC_DIR:=${ROOT_DIR}/src
+SOURCES:=$(wildcard ${SRC_DIR}/*.c)
 EXPERIMENTS_DIR:=${ROOT_DIR}/src/experiments
 LIBS_DIR:=${SRC_DIR}/libs
-
-SOURCES:=$(wildcard ${SRC_DIR}/*.c)
 LIBS:=$(wildcard ${LIBS_DIR}/*.c)
-EXPERIMENTS:=$(wildcard ${EXPERIMENTS_DIR}/*.c)
 LIBS_OBJ:=$(patsubst $(LIBS_DIR)/%.c,$(OBJ_DIR)/%.o,$(LIBS))
+EXPERIMENTS:=$(wildcard ${EXPERIMENTS_DIR}/*.c)
 EXPERIMENTS_BIN:=$(patsubst $(EXPERIMENTS_DIR)/%.c, $(BUILD_DIR)/%,$(EXPERIMENTS))
+
+CFLAGS:=-I. -Iplatform/ -Ilibrary/ -Iexternal/ -lm -O0 -g3 -ggdb -Wextra -Wall
 
 all: ${LIB_PYNQ} ${LIB_SCPI} ${EXPERIMENTS_BIN} ${BUILD_DIR}/rover 
 
-${LIB_SCPI_LIB}: ${LIB_SCPI}
+${OBJ_DIR}/%.o: ${LIBS_DIR}/%.c
+	@mkdir -p $(@D)
+	${CC} -c -o $@ $< ${CFLAGS} ${MYFLAGS}
+ifeq ($(nopynq), 0)
+	$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
+endif
+
 ${BUILD_DIR}/rover: ${SOURCES} ${LIBS_OBJ} ${LIB_PYNQ} ${LIB_SCPI_LIB}
 	$(VERBOSE)${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${MYFLAGS}
 ifeq ($(nopynq), 0)
-		$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
+	$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
 endif
-
-${LIBS_OBJ}: ${LIBS}
-	@mkdir -p $(@D)
-	${CC} -c -o $@ $< ${CFLAGS} ${MYFLAGS}
 
 rover: ${BUILD_DIR}/rover
 
-${EXPERIMENTS_BIN}: ${EXPERIMENTS} ${LIBS_OBJ} ${LIB_PYNQ} ${LIB_SCPI_LIB}
+${BUILD_DIR}/%: ${EXPERIMENTS_DIR}/%.c ${LIBS_OBJ} ${LIB_PYNQ} ${LIB_SCPI_LIB}
 	$(VERBOSE)${CC} -o $@ $< $(filter-out $(wildcard $(<D)/*.c ), $^) ${CFLAGS} ${LDFLAGS} ${MYFLAGS}
 ifeq ($(nopynq), 0)
-		$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
+	$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
 endif
 
 experiments: ${EXPERIMENTS_BIN}
@@ -77,7 +79,6 @@ exp: experiments
 
 ${LIB_SCPI}:
 	$(MAKE) -C external/scpi-parser/libscpi/
-
 
 ifneq (clean,$(MAKECMDGOALS))
 -include ${D_FILES}
