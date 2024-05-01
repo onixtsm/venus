@@ -19,7 +19,6 @@ DATE=$(shell date "+%Y-%m-%d %H:%M")
 RELEASE_BASENAME=libpynq-${RELEASE}-v${MAJOR}.${MINOR}.${PATCH}
 LABEL="release ${RELEASE} version ${MAJOR}.${MINOR}.${PATCH} of ${DATE}"
 
-CFLAGS:=-I. -Iplatform/ -Ilibrary/ -Iexternal/ -lm -O0 -g3 -ggdb -Wextra -Wall -I
 # when compiling empty library:
 # CFLAGS:=-I. -Iplatform/ -Ilibrary/ -Iexternal/ -lm -O0 -g3 -ggdb
 MYFLAGS:=
@@ -123,5 +122,11 @@ clean:
 
 realclean:
 	rm -rf ${BUILD_DIR}
+
+sync:
+	rsync -a --delete . student@10.43.0.8:/home/student/venus # ROBOT
+
+s:
+	rsync -a --delete . student@10.43.0.9:/home/student/venus # MY PYNQ``
 
 .PHONY: indent indent-library indent-applications doc clean release install doc version
