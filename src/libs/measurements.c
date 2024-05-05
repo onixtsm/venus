@@ -22,3 +22,17 @@ uint32_t get_period(uint8_t pin, uint8_t level) {
 
   return (end.tv_sec - start.tv_sec) * 1000 * 1000 + (end.tv_usec - start.tv_usec);
 }
+
+// https://math.stackexchange.com/questions/106700/incremental-averaging
+double incremental_mean(double new_value, double running_mean, size_t count) {
+  if (count < 2) {
+    return new_value;
+  }
+  return running_mean + (new_value - running_mean) / count; 
+
+}
+
+// https://www.arduino.cc/reference/en/language/functions/math/map/
+int map(int x, int in_min, int in_max, int out_min, int out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
