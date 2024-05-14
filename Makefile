@@ -118,7 +118,7 @@ ${BUILD_DIR}/html: documentation/ryb.doxy ${LIBRARIES_SOURCES} ${LIBRARIES_HEADE
 
 # can only clean both library and applications
 clean: 
-	rm -rf ${OBJ_DIR} ${BUILD_DIR}/rover ${EXPERIMENTS_BIN}
+	rm -rf ${OBJ_DIR} ${BUILD_DIR}/rover $(shell find ./build/ -maxdepth 1 -type f)
 
 realclean:
 	rm -rf ${BUILD_DIR}
@@ -127,6 +127,6 @@ sync: all
 	rsync -a --delete . student@10.43.0.8:/home/student/venus # ROBOT
 
 s: all
-	rsync -a --delete . student@10.43.0.9:/home/student/venus # MY PYNQ``
+	rsync -a --delete . student@10.43.0.17:/home/student/venus # MY PYNQ
 
 .PHONY: indent indent-library indent-applications doc clean release install doc version

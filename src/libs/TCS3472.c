@@ -5,6 +5,8 @@
 
 #include "i2c.h"
 
+// https://github.com/adafruit/Adafruit_TCS34725/tree/master
+
 bool tcs3472_init(void) {
   uint8_t x;
   bool err = i2c_read8(TCS3472_ADDR, TCS3472_ID | TCS3472_COMMAND_BIT, &x, IIC0);

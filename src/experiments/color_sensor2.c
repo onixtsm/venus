@@ -30,9 +30,9 @@ int main(void) {
   uint16_t r, g, b;
   size_t j = 0;
   while (j < 10) {
-    iic_read_register(IIC0, 0x29, 0x80 | 0x16, &r, 2);
-    iic_read_register(IIC0, 0x29, 0x80 | 0x18, &g, 2);
-    iic_read_register(IIC0, 0x29, 0x80 | 0x1A, &b, 2);
+    iic_read_register(IIC0, 0x29, 0x80 | 0x16, (uint8_t *)&r, 2);
+    iic_read_register(IIC0, 0x29, 0x80 | 0x18, (uint8_t *)&g, 2);
+    iic_read_register(IIC0, 0x29, 0x80 | 0x1A, (uint8_t *)&b, 2);
 
     printf("r:%d, g:%d, b:%d\n", r, g, b);
 
