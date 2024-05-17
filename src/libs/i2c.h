@@ -42,4 +42,7 @@ bool i2c_write8(uint8_t adress, uint16_t reg, uint8_t a, iic_index_t iic);
  * @warning Fails with program exit if the IIC channel is outside valid range.
  */
 bool i2c_write16(uint8_t adress, uint16_t reg, uint16_t a, iic_index_t iic);
+
+bool i2c_read16_inv(uint8_t address, uint16_t reg, uint16_t *a, iic_index_t iic);
+
 #endif

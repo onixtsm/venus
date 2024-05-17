@@ -38,3 +38,14 @@ bool i2c_write16(uint8_t adress, uint16_t reg, uint16_t a, iic_index_t iic) {
   bool err = iic_write_register(iic, adress, reg, (uint8_t *)&a, 2);
   return err;
 }
+
+bool i2c_read16_inv(uint8_t address, uint16_t reg, uint16_t *a, iic_index_t iic) {
+  bool err;
+  uint8_t c, d;
+  err = i2c_read8(address, reg+1, &c, iic);
+  err = i2c_read8(address, reg, &d, iic);
+
+  *a = (d << 8) | c;
+  return err;
+
+}
