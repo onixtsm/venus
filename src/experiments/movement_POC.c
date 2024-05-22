@@ -30,14 +30,14 @@ int main(void) {
             scanf(" %f", &distance);
             printf("Direction? ");
             scanf(" %d", &input);
-            m_forwardOr(distance, input == 0 ? backward : forward);
+            m_forward_or(distance, input == 0 ? backward : forward);
             break;
         case 'R': //rotation
             printf("Degrees? ");
             scanf(" %f", &degrees);
             printf("Direction? "); //if 1: right & if 0: left
             scanf(" %d", &input);
-            m_turnDegrees(degrees, input == 0 ? left : right);
+            m_turn_degrees(degrees, input == 0 ? left : right);
             break;
         case 'W':; //waggle
             int q, i, d = 0;

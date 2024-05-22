@@ -3,7 +3,7 @@
 #include <libpynq.h>
 #include <stepper.h>
 
-void m_turnDegrees(float degrees, directionLR d)  // direction input should be left/right
+void m_turn_degrees(float degrees, directionLR d)  // direction input should be left/right
 {
   float steps = degrees * (2463.0f / 360);
   if (d == right)  // turns right
@@ -15,7 +15,7 @@ void m_turnDegrees(float degrees, directionLR d)  // direction input should be l
   }
 }
 
-void m_forwardOr(float distance, directionFB d) {
+void m_forward_or(float distance, directionFB d) {
   float steps = distance * (1600.0f / 25.13274);
   if (d == forward) {
     stepper_steps(steps, steps);
