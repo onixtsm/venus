@@ -18,7 +18,6 @@ char* encodeJson(double x_coord, double y_coord, int obj_found, int color, int s
   return json_string;
 }
 
-
 //function to decode the json
 void decodeJson(double *x_coord, double *y_coord, int *obj_found, int *color, int *statuscheck, char *json_string){
   cJSON *root = cJSON_Parse(json_string);

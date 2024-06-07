@@ -1,6 +1,21 @@
 #ifndef COMMS_H
 #define COMMS_H
 
+//enumeration for types of robot stata
+typedef enum stata_enum {
+    IDLE, MOVING, SCANNED, COLLIDING
+} stata;
+
+//enumeration for different colors
+typedef enum color_enum {
+    NONE, BLACK, WHITE, RED, GREEN, BLUE
+} colors;
+
+//enumeration for different kinds of objects
+typedef enum obj_types_enum {
+    NONE, HILL, CLIFF, ROCK
+} obj_types;
+
 double current_x = 10;
 double current_y = 5;
 int current_obj = 1;
