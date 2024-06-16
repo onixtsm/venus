@@ -20,13 +20,13 @@
  * @brief Checks if sensor is connected
  * @return 0 if successful, 1 on error
  */
-bool tcs3472_init(void);
+bool tcs3472_init(int iic);
 
 /*
  * @brief Enables sensor
  * @return 0 if successful, 1 on error
  */
-bool tcs3472_enable(void);
+bool tcs3472_enable(int iic);
 /*
  * @brief Reads sensed values
  * @param c The pointer to clear value
@@ -36,12 +36,12 @@ bool tcs3472_enable(void);
  *
  * @return 0 if successful, 1 on error
  */
-void tcs3472_read_colors(uint16_t *c, uint16_t *r, uint16_t* g, uint16_t *b);
+void tcs3472_read_colors(int iic, uint16_t *c, uint16_t *r, uint16_t* g, uint16_t *b);
 
 /*
  * @brief Disables sensor
  * @return 0 if successful, 1 on error
  */
-bool tcs3472_disable(void);
+bool tcs3472_disable(int iic);
 
 #endif
