@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "i2c.h"
+#include "../libs/measurements.h"
 
 // https://github.com/adafruit/Adafruit_TCS34725/tree/master
 
@@ -57,4 +58,29 @@ bool tcs3472_disable(int iic) {
 
   bool err = i2c_write8(TCS3472_ADDR, TCS3472_COMMAND_BIT | TCS3472_ENABLE, 0, iic);
   return err;
+}
+
+#define WHITE_SENSITIVITY 2000
+#define TRESHHOLD 200
+color_t tcs3472_determine_color(uint16_t c, uint16_t r, uint16_t g, uint16_t b) {
+  if (c < 0.5 * WHITE_SENSITIVITY) {
+    return BLACK;
+  }
+  uint16_t rr = c / r;
+  uint16_t rg = c / g;
+  uint16_t rb = c / b;
+
+  if (abs(rr - rg) < TRESHHOLD && abs(rr - rb) < TRESHHOLD && abs(rg - rb) < TRESHHOLD) {
+    return WHITE;
+  }
+  return MAX(rr, MAX(rg, rb));
+  
+}
+
+const char *COLOR_NAME(size_t index) {
+  if (index >= COLOR_COUNT) {
+    printf("[ERROR] color index out of range\n");
+    return NULL;
+  }
+  return color_names[index];
 }
