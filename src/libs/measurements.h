@@ -11,6 +11,6 @@ int map(int x, int in_min, int in_max, int out_min, int out_max);
 
 #define clamp(x, min, max) (x) > (max) ? (max) : (x) < (min) ? (min) : (x)
 
-#define MAX(a, b) a > b ? a : b
-#define MIN(a, b) a < b ? a : b
+#define MAX(a, b) (a) > (b) ? (a) : (b)
+#define MIN(a, b) (a) < (b) ? (a) : (b)
 #endif

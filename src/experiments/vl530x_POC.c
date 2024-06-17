@@ -1,4 +1,5 @@
 #include "../libs/VL53L0X.h"
+#include "xil_types.h"
 
 #include <libpynq.h>
 #include <stdio.h>
@@ -15,19 +16,19 @@ int main(void) {
   uint8_t id;
   uint8_t a;
 
-
-  vl53l0x_read_default_regs();
-
-  printf("%d\n", vl53l0x_init());
-  uint16_t range;
+  vl53l0x_t *sensor = vl53l0x_init();
+  if (sensor == NULL) {
+    printf("NO sensor found\n");
+    return 1;
+  }
 
 
   while (1) {
     if (get_button_state(BUTTON0)) {
       break;
     }
-    vl53l0x_read_range(&range);
-    printf("Range: %dmm\n", range);
+    vl53l0x_read_range(sensor);
+    printf("Range: %dmm\n", sensor->range);
     sleep_msec(500);
   }
 
