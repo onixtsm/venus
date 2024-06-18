@@ -19,21 +19,29 @@
 typedef enum { RED, GREEN, BLUE, WHITE, BLACK, COLOR_COUNT } color_t;
 
 static const char *color_names[COLOR_COUNT] = {"RED", "GREEN", "BLUE", "WHITE", "BLACK"};
-color_t tcs3472_determine_color(uint16_t c, uint16_t r, uint16_t g, uint16_t b);
+
+
+typedef struct {
+  uint16_t iic;
+  bool enable;
+  uint16_t c, r, g, b;
+} tcs3472_t;
 
 const char *COLOR_NAME(size_t index);
+
+color_t tcs3472_determine_color(tcs3472_t* sensor);
 
 /*
  * @brief Checks if sensor is connected
  * @return 0 if successful, 1 on error
  */
-bool tcs3472_init(int iic);
+tcs3472_t *tcs3472_init(int iic);
 
 /*
  * @brief Enables sensor
  * @return 0 if successful, 1 on error
  */
-bool tcs3472_enable(int iic);
+bool tcs3472_enable(tcs3472_t *sensor);
 /*
  * @brief Reads sensed values
  * @param c The pointer to clear value
@@ -43,12 +51,14 @@ bool tcs3472_enable(int iic);
  *
  * @return 0 if successful, 1 on error
  */
-void tcs3472_read_colors(int iic, uint16_t *c, uint16_t *r, uint16_t *g, uint16_t *b);
+void tcs3472_read_colors(tcs3472_t *sensor);
 
 /*
  * @brief Disables sensor
  * @return 0 if successful, 1 on error
  */
-bool tcs3472_disable(int iic);
+bool tcs3472_disable(tcs3472_t *sensor);
+
+void tcs3472_destroy(tcs3472_t *sensor);
 
 #endif

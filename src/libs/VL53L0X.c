@@ -4,11 +4,10 @@
 #include <stdio.h>
 
 #include "i2c.h"
-
-#define ERROR() fprintf(stderr, "[ERROR] in %s and line %d\n", __func__, __LINE__);
-#define LOG(fmt, ...) fprintf(stderr, fmt "\n", ##__VA_ARGS__)
+#include "../libs/measurements.h"
 
 typedef enum { CALIBRATION_TYPE_VHV, CALIBRATION_TYPE_PHASE } calibration_type_t;
+
 
 // const uint8_t address = VL53L0X_DEFAULT_ADDRESS;
 // uint8_t stop_variable = 0;
@@ -344,4 +343,10 @@ bool vl53l0x_change_address(vl53l0x_t *sensor, uint8_t new_address) {
   }
   sensor->address = new_address;
   return false;
+}
+
+void vl53l0x_destroy(vl53l0x_t *sensor) {
+  if (sensor != NULL) {
+    free(sensor);
+  }
 }

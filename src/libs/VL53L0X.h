@@ -51,6 +51,7 @@
 
 #define VL53L0X_OUT_OF_RANGE (8190)
 
+
 typedef struct {
   uint8_t address;
   uint16_t range;
@@ -61,6 +62,7 @@ vl53l0x_t *vl53l0x_init(void);
 bool vl53l0x_read_range(vl53l0x_t *sensor);
 bool vl53l0x_read_default_regs(vl53l0x_t *sensor);
 bool vl53l0x_change_address(vl53l0x_t *sensor, uint8_t new_address);
+void vl53l0x_destroy(vl53l0x_t *sensor);
 
 
 #endif

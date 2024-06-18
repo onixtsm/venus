@@ -17,7 +17,9 @@ int main(void) {
   // iic_init(IIC1);
   buttons_init();
 
-  if (tcs3472_init(IIC0)) {
+  tcs3472_t *sensor;
+
+  if ((sensor = tcs3472_init(IIC0)) == NULL) {
     fprintf(stderr, "Not init iic0\n");
     return 1;
   }
@@ -26,7 +28,7 @@ int main(void) {
   //   return 1;
   // }
 
-  bool err = tcs3472_enable(IIC0);
+  bool err = tcs3472_enable(sensor);
   if (err) {
     fprintf(stderr, "Cannot enable tcs0\n");
     return 1;
@@ -41,14 +43,15 @@ int main(void) {
     if (get_button_state(BUTTON0)) {
       break;
     }
-    tcs3472_read_colors(IIC0, &c0, &r0, &g0, &b0);
+    tcs3472_read_colors(sensor);
     // tcs3472_read_colors(IIC1, &c1, &r1, &g1, &b1);
-    printf("Senosr 0\n\tc: %d, r: %d, g: %d, b: %d\n\n", c0, r0, g0, b0);
+    printf("Senosr 0\n\tc: %d, r: %d, g: %d, b: %d\n\n", sensor->c, sensor->r, sensor->g, sensor->b);
     // printf("Senosr 1\n\tc: %d, r: %d, g: %d, b: %d\n\n", c1, r1, g1, b1);
     printf("========================\n");
     sleep_msec(500);
   }
 
+  tcs3472_destroy(sensor);
   buttons_destroy();
   gpio_destroy();
   switchbox_destroy();

@@ -3,6 +3,7 @@
 #include <libpynq.h>
 #include "measurements.h"
 
+char name[10];
 
 uint32_t get_period(uint8_t pin, uint8_t level) {
 
