@@ -131,7 +131,7 @@ bool perform_single_ref_calibration(vl53l0x_t *sensor, calibration_type_t calib_
     sleep_msec(30);
   } while (!err && ((interrupt_status & 0x07) == 0));
   if (err) {
-    ERROR()
+    ERROR();
     return 1;
   }
 

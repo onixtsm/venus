@@ -7,6 +7,7 @@
 
 #include "../libs/measurements.h"
 #include "i2c.h"
+#include "../settings.h"
 
 // https://github.com/adafruit/Adafruit_TCS34725/tree/master
 
@@ -65,12 +66,18 @@ void tcs3472_read_colors(tcs3472_t *sensor) {
 }
 
 bool tcs3472_disable(tcs3472_t *sensor) {
-  bool err = i2c_write8(TCS3472_ADDR, TCS3472_COMMAND_BIT | TCS3472_ENABLE, 0, sensor->iic);
-  return err;
+  if (!sensor->enable) {
+    return false;
+  }
+
+  if(i2c_write8(TCS3472_ADDR, TCS3472_COMMAND_BIT | TCS3472_ENABLE, 0, sensor->iic)) {
+    return true;
+  }
+  sensor->enable = false;
+  return 0;
+
 }
 
-#define WHITE_SENSITIVITY 2000
-#define TRESHHOLD 200
 color_t tcs3472_determine_color(tcs3472_t *sensor) {
   if (sensor->c < 0.5 * WHITE_SENSITIVITY) {
     return BLACK;
