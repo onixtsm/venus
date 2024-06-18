@@ -64,5 +64,7 @@ bool vl53l0x_read_default_regs(vl53l0x_t *sensor);
 bool vl53l0x_change_address(vl53l0x_t *sensor, uint8_t new_address);
 void vl53l0x_destroy(vl53l0x_t *sensor);
 
+void vl53l0x_read_mean_range (vl53l0x_t *sensor, uint16_t *range);
+
 
 #endif

@@ -350,3 +350,14 @@ void vl53l0x_destroy(vl53l0x_t *sensor) {
     free(sensor);
   }
 }
+void vl53l0x_read_mean_range (vl53l0x_t *sensor, uint16_t *range){
+  int total = 0;
+  for (int i = 0; i < VL53L0X_READING_COUNT; i++){
+    if (vl53l0x_read_range(sensor)) {
+	    ERROR();
+    }
+    total += sensor->range;
+    sleep_msec(75);
+  }
+  *range = total / VL53L0X_READING_COUNT;
+}

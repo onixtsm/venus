@@ -49,8 +49,9 @@ EXPERIMENTS:=$(wildcard ${EXPERIMENTS_DIR}/*.c)
 EXPERIMENTS_BIN:=$(patsubst $(EXPERIMENTS_DIR)/%.c, $(BUILD_DIR)/%,$(EXPERIMENTS))
 
 CFLAGS:=-I. -Iplatform/ -Ilibrary/ -Iexternal/ -lm -O0 -g3 -ggdb -Wextra -Wall
+LDFLAGS:=-lm
 
-all: ${LIB_PYNQ} ${LIB_SCPI} ${EXPERIMENTS_BIN} ${BUILD_DIR}/rover 
+all: ${LIB_PYNQ} ${LIB_SCPI} ${BUILD_DIR}/rover 
 
 ${OBJ_DIR}/%.o: ${LIBS_DIR}/%.c
 	@mkdir -p $(@D)
@@ -59,7 +60,7 @@ ifeq ($(nopynq), 0)
 	$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
 endif
 
-${BUILD_DIR}/rover: ${SOURCES} ${LIBS_OBJ} ${LIB_PYNQ} ${LIB_SCPI_LIB}
+${BUILD_DIR}/rover: ${SOURCES} ${LIBS_OBJ} ${LIB_PYNQ} ${LIB_SCPI_LIB} ${SRC_DIR}/settings.h
 	$(VERBOSE)${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS} ${MYFLAGS}
 ifeq ($(nopynq), 0)
 	$(VERBOSE)${SUDO} setcap cap_sys_rawio+ep ./${@}
@@ -123,10 +124,10 @@ clean:
 realclean:
 	rm -rf ${BUILD_DIR}
 
-sync: all
+sync:
 	rsync -a --delete . student@10.43.0.8:/home/student/venus # ROBOT
 
-s: all
-	rsync -a --delete . student@10.43.0.17:/home/student/venus # MY PYNQ
+s:
+	rsync -a --delete . student@10.43.0.1:/home/student/venus # MY PYNQ
 
 .PHONY: indent indent-library indent-applications doc clean release install doc version

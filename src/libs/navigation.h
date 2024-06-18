@@ -1,14 +1,31 @@
 #ifndef NAVIGATION_H_
 #define NAVIGATION_H_
-
 #include <stdbool.h>
 
+#include "TCS3472.h"
+#include "VL53L0X.h"
+
 typedef struct _coordinates_t {
-  float x_coord; // In mm
-  float y_coord; // In mm
+  float x_coord;  // In mm
+  float y_coord;  // In mm
 } coordinates_t;
 
-typedef enum {NAVIG_NONE, NAVIG_TURNING, NAVIG_MOVING} navig_movement_t;
+typedef struct {
+  double x;
+  double y;
+  double di;
+} position_t;
+
+typedef enum { none, border, crater, smallRock, bigRock, hill } obstacle_type_t;
+
+typedef struct {
+  obstacle_type_t type;
+  color_t color;
+  double x;
+  double y;
+} obstacle_data_t;
+
+typedef enum { NAVIG_NONE, NAVIG_TURNING, NAVIG_MOVING } navig_movement_t;
 
 /**
  * @brief Initialises motors.
@@ -52,5 +69,15 @@ coordinates_t navig_get_current_position(void);
  * @returns the current heading (angle with respect to "north") of the robot.
  */
 float navig_get_current_heading(void);
+
+double direction(double *di, double ddi);  // updates direction properl
+                                           //
+obstacle_data_t avoidBorderOrCrater(position_t *pos, tcs3472_t *forward_looking);
+obstacle_data_t scanBorderCrater(position_t *pos, tcs3472_t *forward_looking);
+void killSwitchScan(position_t *pos, position_t *tPos, tcs3472_t *down_looking);
+
+obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking);
+
+obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking);
 
 #endif

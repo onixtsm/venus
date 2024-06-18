@@ -10,6 +10,13 @@ typedef enum { forward, backward } directionFB;
  * @param d Direction which to turn {left, right}.
  */
 void m_turn_degrees(float degrees, directionLR d);
+
+/**
+ * @brief Turns robot to specified direction in degrees.
+ * @param degrees Amount of degrees to turn.
+ * @param d Direction which to turn {left, right}.
+ */
+void m_turn_degrees(float degrees, directionLR d);
 /**
  * @brief Moves given amount in given direction.
  * @param distance Distance to move.

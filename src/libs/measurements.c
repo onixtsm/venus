@@ -37,3 +37,10 @@ double incremental_mean(double new_value, double running_mean, size_t count) {
 int map(int x, int in_min, int in_max, int out_min, int out_max) {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
+float generateRandomFloat(float min, float max) {   //yes, this function was c+p from chatGPT, fuck off
+    // Generate a random float in the range [0, 1]
+    float scale = rand() / (float) RAND_MAX;
+    // Scale and shift the result to the desired range
+    return min + scale * (max - min);
+}
