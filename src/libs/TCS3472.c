@@ -1,13 +1,14 @@
 #include "TCS3472.h"
 
 #include <libpynq.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
-
 #include "../libs/measurements.h"
-#include "i2c.h"
 #include "../settings.h"
+#include "i2c.h"
+#include "util.h"
 
 // https://github.com/adafruit/Adafruit_TCS34725/tree/master
 
@@ -70,31 +71,85 @@ bool tcs3472_disable(tcs3472_t *sensor) {
     return false;
   }
 
-  if(i2c_write8(TCS3472_ADDR, TCS3472_COMMAND_BIT | TCS3472_ENABLE, 0, sensor->iic)) {
+  if (i2c_write8(TCS3472_ADDR, TCS3472_COMMAND_BIT | TCS3472_ENABLE, 0, sensor->iic)) {
     return true;
   }
   sensor->enable = false;
   return 0;
-
 }
 
+void print_colors(tcs3472_t *sensor) { LOG("c: %d, r: %d, g: %d, b: %d\n", sensor->c, sensor->r, sensor->g, sensor->b); }
+/*
 color_t tcs3472_determine_color(tcs3472_t *sensor) {
+  print_colors(sensor);
   if (sensor->c < 0.5 * WHITE_SENSITIVITY) {
     return BLACK;
   }
-  uint16_t rr = sensor->c / sensor->r;
-  uint16_t rg = sensor->c / sensor->g;
-  uint16_t rb = sensor->c / sensor->b;
+  float rr = (float)sensor->c / sensor->r;
+  float rg = (float)sensor->c / sensor->g;
+  float rb = (float)sensor->c / sensor->b;
 
-  if (abs(rr - rg) < TRESHHOLD && abs(rr - rb) < TRESHHOLD && abs(rg - rb) < TRESHHOLD) {
+  if (fabs(rr - rg) < TRESHHOLD && fabs(rr - rb) < TRESHHOLD && fabs(rg - rb) < TRESHHOLD) {
     return WHITE;
   }
-  return MAX(rr, MAX(rg, rb));
+  float max = MAX(sensor->r, MAX(sensor->g, sensor->b));
+  if (max == sensor->r) return RED;
+  if (max == sensor->g) return GREEN;
+  if (max == sensor->b) return BLUE;
+  return WHITE;
+}
+*/
+
+
+
+
+color_t tcs3472_determine_single_color(tcs3472_t *sensor) {
+  float nr = (float)sensor->r / sensor->c;
+  float ng = (float)sensor->g / sensor->c;
+  float nb = (float)sensor->b / sensor->c;
+
+  float sum = nr + ng + nb;
+
+  float rr = nr / sum;
+  float rg = ng / sum;
+  float rb = nb / sum;
+
+  if (sensor->c < BLACK_TRESHOLD) {
+    return BLACK;
+  }
+  if (sensor->c > WHITE_TRESHOLD) {
+    return WHITE;
+  }
+  if (rr > rg && rr > rb) {
+    return RED;
+  }
+  if (rg > rr && rg > rb) {
+    return GREEN;
+  }
+  if (rb > rr && rb > rg) {
+    return BLUE;
+  }
+  return WHITE;
+}
+
+color_t tcs3472_determine_color(tcs3472_t *sensor) {
+  color_t a[COLOR_COUNT] = {0};
+  for (size_t i = 0; i < TCS3472_READING_COUNT; ++i) {
+    a[tcs3472_determine_single_color(sensor)]++;
+    sleep_msec(100);
+  }
+  color_t max = COLOR_COUNT;
+  for (size_t i = 0; i < COLOR_COUNT; ++i) {
+    if (a[i] > max) {
+      max = i;
+    }
+  }
+  return max;
 }
 
 const char *COLOR_NAME(size_t index) {
   if (index >= COLOR_COUNT) {
-    ERROR("color index out of range\n");
+    ERROR("color index out of range (%zu)\n", index);
     return NULL;
   }
   return color_names[index];

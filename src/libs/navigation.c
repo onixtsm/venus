@@ -56,7 +56,7 @@ void navig_start_turning(float angle) {
   if (angle > 360.0) angle = 360.0;
   if (angle < -360.0) angle = -360.0;
 
-  printf("Starting turning %f degrees\n", angle);
+  LOG("Starting turning %f degrees\n", angle);
 
   if (navig_still_moving()) {
     navig_stop();
@@ -72,7 +72,7 @@ void navig_start_turning(float angle) {
 }
 
 void navig_start_moving(float distance) {
-  printf("Starting moving %f mm\n", distance);
+  LOG("Starting moving %f mm\n", distance);
 
   if (navig_still_moving()) {
     navig_stop();
@@ -109,7 +109,7 @@ coordinates_t navig_get_current_position(void) {
       break;
   }
 
-  printf("navig_get_current_position() => %f, %f\n", current_position.x_coord, current_position.y_coord);
+  LOG("navig_get_current_position() => %f, %f\n", current_position.x_coord, current_position.y_coord);
 
   return current_position;
 }
@@ -133,7 +133,7 @@ float navig_get_current_heading(void) {
       break;
   }
 
-  printf("navig_get_current_heading() => %f\n", current_heading);
+  LOG("navig_get_current_heading() => %f\n", current_heading);
 
   return current_heading;
 }
@@ -199,7 +199,7 @@ obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
   }
   
   for(int i = 0; i<12;i++){
-    printf("%d\n", distance[i]);
+    LOG("%d\n", distance[i]);
   }
 
   m_turn_degrees(60, left);                              //repeat process to original position
@@ -228,9 +228,9 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
   vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_middle);
   vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_high);
 
-  printf("Distance to high obstacle: %d \n", distance_high);
-  printf("Distance to middle obstacle: %d \n", distance_middle);
-  printf("Distance to low obstacle: %d \n", distance_low);
+  LOG("Distance to high obstacle: %d \n", distance_high);
+  LOG("Distance to middle obstacle: %d \n", distance_middle);
+  LOG("Distance to low obstacle: %d \n", distance_low);
 
 
   // getchar();
@@ -252,9 +252,9 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
       vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_middle);
       vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_high);
 
-      printf("Distance to high obstacle: %d \n", distance_high);
-      printf("Distance to middle obstacle: %d \n", distance_middle);
-      printf("Distance to low obstacle: %d \n", distance_low);
+      LOG("Distance to high obstacle: %d \n", distance_high);
+      LOG("Distance to middle obstacle: %d \n", distance_middle);
+      LOG("Distance to low obstacle: %d \n", distance_low);
       // getchar();
 
     }
@@ -264,13 +264,13 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
     vl53l0x_read_mean_range(distance_sensors[VL53L0X_HIGH], &distance_high);
     if (distance_low >= distance_high - 20 && distance_low <= distance_high + 20){    //readings of distance sensors must be within 20mm of each other to be considered the same
       obstacle.type = hill;
-      printf("hill\n");
+      LOG("hill\n");
     } else if (distance_low >= distance_middle - 20 && distance_low <= distance_middle + 20){
       obstacle.type = bigRock;
-      printf("big rock\n");
+      LOG("big rock\n");
     } else{
       obstacle.type = smallRock;
-      printf("small rock\n");
+      LOG("small rock\n");
     }
     float rads = pos->di * pi / 180;
     obstacle.x = pos->x + 6 * cos(rads);

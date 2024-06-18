@@ -22,8 +22,8 @@ float generateRandomFloat(float min, float max);  //yes, this function was c+p f
 #define MIN(a, b) (a) < (b) ? (a) : (b)
 
 #ifdef DEBUG
-#define ERROR(fmt, ...) fprintf(stderr, "[ERROR %s] in %s and line %d"fmt "\n", name, __func__, __LINE__, ##__VA_ARGS__)
-#define LOG(fmt, ...) fprintf(stderr, "[LOG %s]"fmt "\n", name, ##__VA_ARGS__)
+#define ERROR(fmt, ...) fprintf(stderr, "%s: [ERROR] in %s and line %d " fmt "\n", name, __func__, __LINE__, ##__VA_ARGS__)
+#define LOG(fmt, ...) fprintf(stderr, "%s: [LOG]" fmt "\n", name, ##__VA_ARGS__)
 #else
 #define LOG(fmt, ...) do{}while(0)
 #define ERROR(fmt, ...) do{}while(0)

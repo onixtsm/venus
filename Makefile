@@ -128,6 +128,6 @@ sync:
 	rsync -a --delete . student@10.43.0.8:/home/student/venus # ROBOT
 
 s:
-	rsync -a --delete . student@10.43.0.1:/home/student/venus # MY PYNQ
+	rsync -a --delete . student@10.43.0.17:/home/student/venus # MY PYNQ
 
 .PHONY: indent indent-library indent-applications doc clean release install doc version

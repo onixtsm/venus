@@ -1,5 +1,4 @@
 #include "../libs/VL53L0X.h"
-#include "xil_types.h"
 
 #include <libpynq.h>
 #include <stdio.h>
@@ -13,9 +12,6 @@ int main(void) {
   switchbox_set_pin(IO_AR_SDA, SWB_IIC0_SDA);
 
   iic_init(IIC0);
-  uint8_t id;
-  uint8_t a;
-
   vl53l0x_t *sensor = vl53l0x_init();
   if (sensor == NULL) {
     printf("NO sensor found\n");

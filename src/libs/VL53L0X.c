@@ -153,18 +153,18 @@ bool perform_ref_calibration(vl53l0x_t *sensor) {
     ERROR();
     return 1;
   }
-  printf("Calibrated CALIBRATION_TYPE_VHV\n");
+  LOG("Calibrated CALIBRATION_TYPE_VHV\n");
   if (perform_single_ref_calibration(sensor, CALIBRATION_TYPE_PHASE)) {
     ERROR();
     return 1;
   }
-  printf("Calibrated CALIBRATION_TYPE_PHASE\n");
+  LOG("Calibrated CALIBRATION_TYPE_PHASE\n");
   if (set_sequence_steps_enabled(sensor, VL53L0X_RANGE_SEQUENCE_STEP_DSS + VL53L0X_RANGE_SEQUENCE_STEP_PRE_RANGE +
                                              VL53L0X_RANGE_SEQUENCE_STEP_FINAL_RANGE)) {
     ERROR();
     return 1;
   }
-  printf("Sequence steps enabled\n");
+  LOG("Sequence steps enabled\n");
   return 0;
 }
 
