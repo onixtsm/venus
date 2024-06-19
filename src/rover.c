@@ -2,8 +2,8 @@
 #include <libpynq.h>
 #include <math.h>
 #include <stdio.h>
+#include <stepper.h>
 #include <string.h>
-
 
 #include "libs/VL53L0X.h"
 #include "libs/measurements.h"
@@ -11,6 +11,7 @@
 #include "libs/navigation.h"
 #include "settings.h"
 #include "src/libs/TCS3472.h"
+#include "util.h"
 
 void get_name(void) {
   char path[100] = {0};
@@ -27,7 +28,6 @@ void get_name(void) {
   }
   fclose(f);
 }
-
 
 void setup_pins(void) {
   switchbox_set_pin(IO_AR5, SWB_IIC1_SCL);
@@ -106,7 +106,6 @@ tcs3472_t **init_color_sensors(size_t count) {
     if (IIC0 + i == IIC0) {
       gpio_set_level(COLOR_SENSOR_X_PIN, GPIO_LEVEL_HIGH);
       sleep_msec(SLEEP_TIME);
-      getchar();
     }
     sensors[i] = tcs3472_init(IIC0 + i);
     if (sensors[i] == NULL) {
@@ -146,24 +145,48 @@ int main(void) {
   get_name();
   setup_pins();
 
-  // TODO: WRITE CALIBRATION, THAT I (ALEKS) LIKE
+  stepper_init();
+  stepper_enable();
+  stepper_set_speed(65535, 65535);
 
   vl53l0x_t **distance_sensors = init_distance_sensors(3);
   tcs3472_t **color_sensors = init_color_sensors(2);
 
-  vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX) ;
+  // vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
 
   position_t pos = {0.0, 0.0, 90.0};  // initiating the coord system
   obstacle_data_t obstacle;           // allocate space for new obstacle
+
+  tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
+  tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
+  tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
+  tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
+  tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
+  tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
 
   sleep_msec(1000);
 
   while (true) {  // exploration should work as follows:
 
-    LOG("Sending complete!\nType: %d\nColor: %d\nx: %f, y: %f\n", obstacle.type, obstacle.color, obstacle.x, obstacle.y);
+    LOG("Sending complete!\nType: %d\nColor: %s\nx: %f, y: %f\n", obstacle.type, COLOR_NAME((size_t)obstacle.color), obstacle.x,
+        obstacle.y);
 
-    if (tcs3472_determine_color(color_sensors[DOWN_LOOKING]) == BLACK) {
+    color_t front = tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
+    color_t down = tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
+    print_colors(color_sensors[FORWARD_LOOKING]);
+    print_colors(color_sensors[DOWN_LOOKING]);
+    LOG("Downwards color %s", COLOR_NAME(down));
+
+     while(!stepper_steps_done()){
+       int16_t left = 0, right = 0; 
+       stepper_get_steps(&left, &right);
+        printf("%d %d\n", left, right);
+     }
+    if (down == BLACK) {
       obstacle = avoidBorderOrCrater(&pos, color_sensors[FORWARD_LOOKING]);
+      while (!stepper_steps_done()) {
+        sleep_msec(100);
+      }
       continue;
     }
     obstacle = scanScope(&pos, distance_sensors, color_sensors[FORWARD_LOOKING]);

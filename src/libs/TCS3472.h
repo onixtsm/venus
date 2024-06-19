@@ -18,7 +18,7 @@
 #define TCS3472_REG_B 0x1A
 typedef enum { RED, GREEN, BLUE, WHITE, BLACK, COLOR_COUNT } color_t;
 
-static const char *color_names[COLOR_COUNT] = {"RED", "GREEN", "BLUE", "WHITE", "BLACK"};
+static const char *color_names[COLOR_COUNT+1] = {"RED", "GREEN", "BLUE", "WHITE", "BLACK", "UNKNOWN"};
 
 
 typedef struct {
@@ -60,5 +60,7 @@ void tcs3472_read_colors(tcs3472_t *sensor);
 bool tcs3472_disable(tcs3472_t *sensor);
 
 void tcs3472_destroy(tcs3472_t *sensor);
+
+void print_colors(tcs3472_t *sensor);
 
 #endif

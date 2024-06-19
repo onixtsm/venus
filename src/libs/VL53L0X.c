@@ -9,6 +9,8 @@
 #include "measurements.h"
 #include "movement.h"
 #include "src/settings.h"
+#include "stepper.h"
+#include "util.h"
 
 typedef enum { CALIBRATION_TYPE_VHV, CALIBRATION_TYPE_PHASE } calibration_type_t;
 
@@ -390,22 +392,25 @@ void vl53l0x_calibration_dance(vl53l0x_t **distance_sensors, size_t sensor_count
     getchar();
 #endif
     for (size_t j = 0; j < sensor_count; ++j) {
-      measurements[i * sizeof(*measurements) * calibration_matrix_size + j * sizeof(*measurements)] =
-          vl53l0x_get_single_optimal_range(distance_sensors[j]);
+      measurements[i + (calibration_matrix_size)*j] = vl53l0x_get_single_optimal_range(distance_sensors[j]);
     }
-    if (i + 1 == calibration_matrix_size) {
+    /* if (i + 1 == calibration_matrix_size) {
       break;
-    }
+    } */
 #ifndef DEBUG_VL
-    m_forward_or(calibration_matrix[i + 1] - calibration_matrix[i], backward);
-#endif
-  }
 
-  for (size_t i = 0; i < sensor_count; ++i) {
-    for (size_t j = 0; j < calibration_matrix_size; ++j) {
-      x[j] = measurements[j * sizeof(*measurements) * calibration_matrix_size + i * sizeof(*measurements)];
+    m_forward_or((calibration_matrix[i + 1] - calibration_matrix[i]) / 10, backward);
+    while (!stepper_steps_done()) {
+      sleep_msec(30);
     }
-    linear_regression(calibration_matrix_size, x, calibration_matrix, &distance_sensors[i]->a, &distance_sensors[i]->b);
-    LOG("a :%f, :b %f", distance_sensors[i]->a, distance_sensors[i]->b);
   }
-}
+#endif
+
+    for (size_t i = 0; i < sensor_count; ++i) {
+      for (size_t j = 0; j < calibration_matrix_size; ++j) {
+        x[j] = measurements[j * calibration_matrix_size + i];
+      }
+      linear_regression(calibration_matrix_size, x, calibration_matrix, &distance_sensors[i]->a, &distance_sensors[i]->b);
+      LOG("a :%f, :b %f", distance_sensors[i]->a, distance_sensors[i]->b);
+    }
+  }

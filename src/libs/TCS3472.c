@@ -100,10 +100,11 @@ color_t tcs3472_determine_color(tcs3472_t *sensor) {
 }
 */
 
-
-
-
 color_t tcs3472_determine_single_color(tcs3472_t *sensor) {
+  tcs3472_read_colors(sensor);
+  if (sensor->c == 0) {
+    return COLOR_COUNT;
+  }
   float nr = (float)sensor->r / sensor->c;
   float ng = (float)sensor->g / sensor->c;
   float nb = (float)sensor->b / sensor->c;
@@ -135,8 +136,12 @@ color_t tcs3472_determine_single_color(tcs3472_t *sensor) {
 color_t tcs3472_determine_color(tcs3472_t *sensor) {
   color_t a[COLOR_COUNT] = {0};
   for (size_t i = 0; i < TCS3472_READING_COUNT; ++i) {
-    a[tcs3472_determine_single_color(sensor)]++;
+    color_t color;
+    do {color = tcs3472_determine_single_color(sensor);
+      sleep_msec(100);
+    } while (color == COLOR_COUNT);
     sleep_msec(100);
+    a[color]++;
   }
   color_t max = COLOR_COUNT;
   for (size_t i = 0; i < COLOR_COUNT; ++i) {

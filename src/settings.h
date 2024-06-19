@@ -13,7 +13,7 @@ static const uint8_t distance_sensor_x_pins[] = {IO_AR6, IO_AR7, IO_AR8};
 
 typedef enum { VL53L0X_LOW, VL53L0X_MIDDLE, VL53L0X_HIGH, VL53L0X_SENSOR_COUNT } VL53L0X_SENOSR_NAMES;
 
-static const float CALIBRATION_MATRIX[] = {5, 10, 0}; // SHOULD BE ZERO TERMINATED
+static const float CALIBRATION_MATRIX[] = {50, 100, 0}; // SHOULD BE ZERO TERMINATED
 #define MEASUREMENT_COUNT 2
 
 #define MAX_FAILS 16
