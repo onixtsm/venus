@@ -152,18 +152,10 @@ int main(void) {
   vl53l0x_t **distance_sensors = init_distance_sensors(3);
   tcs3472_t **color_sensors = init_color_sensors(2);
 
-  // vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
+  vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
 
   position_t pos = {0.0, 0.0, 90.0};  // initiating the coord system
   obstacle_data_t obstacle;           // allocate space for new obstacle
-
-  // tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
-  // tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
-  // tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
-  // tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
-  // tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
-  // tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
-
 
   while (true) {  // exploration should work as follows:
 

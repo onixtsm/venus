@@ -353,6 +353,7 @@ bool vl53l0x_change_address(vl53l0x_t *sensor, uint8_t new_address) {
     return true;
   }
   sensor->address = new_address;
+  sleep_msec(500);
   return false;
 }
 
@@ -394,25 +395,23 @@ void vl53l0x_calibration_dance(vl53l0x_t **distance_sensors, size_t sensor_count
     getchar();
 #endif
     for (size_t j = 0; j < sensor_count; ++j) {
-      measurements[i + (calibration_matrix_size)*j] = vl53l0x_get_single_optimal_range(distance_sensors[j]);
+      measurements[i + calibration_matrix_size *j] = vl53l0x_get_single_optimal_range(distance_sensors[j]);
     }
-    /* if (i + 1 == calibration_matrix_size) {
-      break;
-    } */
 #ifndef DEBUG_VL
-
-    m_forward_or((calibration_matrix[i + 1] - calibration_matrix[i]) / 10, backward);
+    m_forward_or((calibration_matrix[i + 1] - calibration_matrix[i]) / 10 / 2, backward); // At last move it will go a calibration_matrix[i] forward;
     while (!stepper_steps_done()) {
       sleep_msec(30);
     }
-  }
 #endif
+  }
 
     for (size_t i = 0; i < sensor_count; ++i) {
       for (size_t j = 0; j < calibration_matrix_size; ++j) {
-        x[j] = measurements[j * calibration_matrix_size + i];
+        // x[j] = measurements[i * calibration_matrix_size + j];
+        x[j] = measurements[i + j * sensor_count];
       }
       linear_regression(calibration_matrix_size, x, calibration_matrix, &distance_sensors[i]->a, &distance_sensors[i]->b);
       LOG("a :%f, :b %f", distance_sensors[i]->a, distance_sensors[i]->b);
     }
+    free(measurements);
   }
