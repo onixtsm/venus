@@ -11,6 +11,8 @@
 #include "libs/navigation.h"
 #include "settings.h"
 #include "src/libs/TCS3472.h"
+#include "libs/comms.h"
+
 #include "util.h"
 
 void get_name(void) {
@@ -151,6 +153,10 @@ int main(void) {
 
   vl53l0x_t **distance_sensors = init_distance_sensors(3);
   tcs3472_t **color_sensors = init_color_sensors(2);
+
+  send_ready_message(name);
+
+  while (!recv_start_message());
 
   vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
 

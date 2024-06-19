@@ -2,6 +2,7 @@
 #define V_TYPES
 
 #define NONE 69420
+#include "TCS3472.h"
 
 /**
  * Structure for defining a point_t in a 2D system.
@@ -14,9 +15,6 @@ typedef struct {
 /**
  * Enumeration for different colors.
 */
-typedef enum {
-    NO_COLOR, BLACK, WHITE, GREEN, RED, BLUE
-} colors;
 
 /**
  * Enumeration for different kinds of objects.
@@ -31,7 +29,7 @@ typedef enum {
 typedef struct {
     double x;
     double y;      //position where obstacle is detected
-    colors color;   //color of the obstacle 
+    color_t color;   //color of the obstacle 
     obs_types type; //type of detected obstacle
 } obstacle_t;
 

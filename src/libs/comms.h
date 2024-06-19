@@ -9,6 +9,7 @@
  * @param obstacle the detected obstacle
  * @param robot the robot that detected
 */
+
 void send_msg(obstacle_t obstacle, robot_t robot);
 
 /**
@@ -20,4 +21,8 @@ void send_msg(obstacle_t obstacle, robot_t robot);
 */
 void recv_msg(obstacle_t* obstacle, robot_t* robot);
 
+/* Sends reasy message */
+void send_ready_message(char *name);
+
+bool recv_start_message(void);
 #endif
