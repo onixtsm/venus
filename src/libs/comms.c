@@ -1,50 +1,134 @@
 #include <libpynq.h>
 #include <cJSON.h>
 #include <stdio.h>
+#include "comms.h"
 
-char *json;
+//json variable
+char* json;
 
-//Function to code the message into JSON
-char* encodeJson(double x_coord, double y_coord, int obj_found, int color, int statuscheck){
+//number of items in JSON objects
+#define JSON_SIZE 7
 
-  cJSON *root = cJSON_CreateObject();
-  cJSON_AddNumberToObject(root, "x", x_coord);
-  cJSON_AddNumberToObject(root, "y", y_coord);
-  cJSON_AddNumberToObject(root, "obj_found", obj_found);
-  cJSON_AddNumberToObject(root, "color", color);
-  cJSON_AddNumberToObject(root, "status", statuscheck);
-  char *json_string = cJSON_PrintUnformatted(root);
-  cJSON_Delete(root);
-  return json_string;
+//enumeration for easily identifying the labels for json items
+typedef enum {
+    ROBOT_X, ROBOT_Y, ROBOT_STATUS, OBS_X, OBS_Y, OBS_TYPE, OBS_COLOR
+} identifiers;
+
+//constant for JSON identifying labels
+const char* JSON_LABELS[JSON_SIZE] = {
+    "robot_x",          //id = ROBOT_X
+    "robot_y",          //id = ROBOT_Y
+    "robot_status",     //id = ROBOT_STATUS
+    "obstacle_x",       //id = OBS_X
+    "obstacle_y",       //id = OBS_Y
+    "obstacle_type",     //id = OBS_TYPE
+    "obstacle_color"    //id = OBS_COLOR
+};
+
+//Helper inline functions
+
+/**
+ * Inline function that adds robot information to a json object
+ * 
+ * @param rob the robot 
+ * @param root the json object
+*/
+#define encode_robot(root, robot)\
+    cJSON_AddNumberToObject((root), "robot_x", (robot).x);\
+    cJSON_AddNumberToObject((root), "robot_y", (robot).y);\
+    cJSON_AddNumberToObject((root), "robot_status", (robot).status);
+
+/**
+ * Inline function that adds obstacle information to a json object
+ * 
+ * @param obs the obstacle
+ * @param root the json object
+*/
+#define encode_obstacle(root, obstacle)\
+    cJSON_AddNumberToObject((root), "obstacle_x", (obstacle).x);\
+    cJSON_AddNumberToObject((root), "obstacle_y", (obstacle).y);\
+    cJSON_AddNumberToObject((root), "obstacle_type", (obstacle).type);\
+    cJSON_AddNumberToObject((root), "obstacle_color", (obstacle).color);
+
+/**
+ * Inline function for extracting one number item from a json object
+ * 
+ * @param root the json object
+ * @param temp temporary variable for storing the json item
+ * @param item an individual number item from @code root
+ * @param label the identifying string of the json item
+ * 
+ * @return exit code 1 if the item is not a number
+*/
+#define json_extract(root, temp, item, label)\
+    (temp) = cJSON_GetObjectItem((root), (label));\
+    if (!cJSON_IsNumber((temp))) {\
+        fprintf(stderr, "JSON item is not a number\n");\
+        return 1;\
+    } else if (temp == NULL) {\
+        fprintf(stderr, "JSON variable NULL\n");\
+        return 1;\
+    } else {\
+        (item) = (temp)->valuedouble;\
+    }
+
+
+//private function definitions
+/**
+ * Encodes information regarding robot status and detected obstacles in a JSON format.
+ * 
+ * @param obs the detected obstacle
+ * @param rob the robot that detected
+ * @return pointer to a JSON string which encodes the given information.
+*/
+char* encode_json(obstacle_t obstacle, robot_t robot) {
+    //initialize json object
+    cJSON* root = cJSON_CreateObject();
+
+    //add all information to the object
+    encode_robot(root, robot);
+    encode_obstacle(root, obstacle);
+
+    //create the json string
+    char *json_string = cJSON_PrintUnformatted(root);
+
+    //release the memory for the json object
+    cJSON_Delete(root);
+    return json_string;
 }
 
-//function to decode the json
-void decodeJson(double *x_coord, double *y_coord, int *obj_found, int *color, int *statuscheck, char *json_string){
-  cJSON *root = cJSON_Parse(json_string);
-  cJSON *x = cJSON_GetObjectItem(root, "x");
-  cJSON *y = cJSON_GetObjectItem(root, "y");
-  cJSON *obj= cJSON_GetObjectItem(root, "obj_found");
-  cJSON *colorjson = cJSON_GetObjectItem(root, "color");
-  cJSON *status = cJSON_GetObjectItem(root, "status");
+/**
+ * Decodes a JSON string for retrieving information regarding 
+ * robot status and detected obstacles.
+ * 
+ * @param obs the detected obstacle
+ * @param rob the robot that detected
+ * @param json_string the JSON string to decode
+ * @return exit code 0 if subroutine executes successfully, 
+ * 1 in case of an error.
+*/
+int decode_json(obstacle_t* obstacle, robot_t* rob, char *json_string) {
+    //temporary json object
+    cJSON *temp = NULL;
+
+    //initialize data for the JSON number items
+    int data[JSON_SIZE] = {-1};
     
-  if (cJSON_IsNumber(x)) {
-      *x_coord = x->valuedouble;
-  }
-  if (cJSON_IsNumber(y)) {
-      *y_coord = y->valuedouble;
-  }
-  if (cJSON_IsNumber(obj)) {
-      *obj_found = obj->valueint;
-  }
-  if (cJSON_IsNumber(colorjson)) {
-      *color = colorjson->valueint;
-  }
-  if (cJSON_IsNumber(status)) {
-      *statuscheck = status->valueint;
-  }
+    //create the json object
+    cJSON *root = cJSON_Parse(json_string);
 
-  cJSON_Delete(root);
-}
+    //fill the json data and handle the case where the item is not a number
+    for (uint8_t i = 0; i < JSON_SIZE; i++) {
+        json_extract(root, temp, data[i], JSON_LABELS[i]);
+    }
+    //update the robot and obstacle information based on the received json data
+    set_robot_data(rob, data[ROBOT_X], data[ROBOT_Y], data[ROBOT_STATUS], ->);
+    set_obstacle_data(obstacle, data[OBS_X], data[OBS_Y], data[OBS_COLOR], data[OBS_TYPE], ->);
+
+    //delete the json object
+    cJSON_Delete(root);
+    return 0;
+};
 
 //Function to send message(Idea: color is one of six colors(?) so its 1-6 interger)(object- 0- nothing, 1- cliff, 2-hill, 3- small block, 4 big block)
 void send_json(char message[]){
@@ -78,17 +162,17 @@ char* receive_json(){
   return json_string;
 }
 
+//public function definitions
+void send_msg(obstacle_t obstacle, robot_t robot){
+    char* json = encode_json(obstacle, robot);
+    send_json(json);
 
-void send_msg(double x_coord, double y_coord, int obj_found, int color, int status){
-  char *json = encodeJson(x_coord, y_coord, obj_found, color, status);
-  send_json(json);
+    free(json);
 }
 
-void recv_msg(double *x_coord, double *y_coord, int *obj_found, int *color, int *status){
-  char *json = receive_json();
-  decodeJson(x_coord, y_coord, obj_found, color, status, json);
+void recv_msg(obstacle_t* obstacle, robot_t* robot){
+    char* json = receive_json();
+    decode_json(obstacle, robot, json);
 
-  free(json);
+    free(json);
 }
-
-
