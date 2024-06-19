@@ -36,4 +36,6 @@ static const float CALIBRATION_MATRIX[] = {30, 50, 70, 100, 150, 0}; // SHOULD B
 
 #define VL53L0X_READING_COUNT 5
 
+#define STEPPER_SPEED 65535
+
 #endif

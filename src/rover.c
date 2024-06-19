@@ -5,20 +5,22 @@
 #include <stepper.h>
 #include <string.h>
 
+#include "buttons.h"
 #include "libs/VL53L0X.h"
+#include "libs/comms.h"
 #include "libs/measurements.h"
 #include "libs/movement.h"
 #include "libs/navigation.h"
 #include "settings.h"
 #include "src/libs/TCS3472.h"
-#include "libs/comms.h"
-
 #include "util.h"
 
+bool should_die(void) {
+  return !get_button_state(BUTTON0);
+}
+
 void get_name(void) {
-  char path[100] = {0};
-  char filename[] = "/.name";
-  strncat(strcpy(path, getenv("HOME")), filename, strlen(filename) + 1);
+  char path[] = "/home/student/.name";
   FILE *f = fopen(path, "rb");
   if (f == NULL) {
     return;
@@ -149,21 +151,21 @@ int main(void) {
 
   stepper_init();
   stepper_enable();
-  stepper_set_speed(65535, 65535);
+  stepper_set_speed(STEPPER_SPEED, STEPPER_SPEED);
 
   vl53l0x_t **distance_sensors = init_distance_sensors(3);
   tcs3472_t **color_sensors = init_color_sensors(2);
 
   send_ready_message(name);
 
-  while (!recv_start_message());
+  while (!recv_start_message() && !should_die());
 
   vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
 
   position_t pos = {0.0, 0.0, 90.0};  // initiating the coord system
   obstacle_data_t obstacle;           // allocate space for new obstacle
 
-  while (true) {  // exploration should work as follows:
+  while (!should_die()) {  // exploration should work as follows:
 
     LOG("Sending complete!\nType: %d\nColor: %s\nx: %f, y: %f\n", obstacle.type, COLOR_NAME((size_t)obstacle.color), obstacle.x,
         obstacle.y);
@@ -174,14 +176,14 @@ int main(void) {
     print_colors(color_sensors[DOWN_LOOKING]);
     LOG("Downwards color %s", COLOR_NAME(down));
 
-     while(!stepper_steps_done()){
-       int16_t left = 0, right = 0; 
-       stepper_get_steps(&left, &right);
-        printf("%d %d\n", left, right);
-     }
+    while (!stepper_steps_done() && !should_die()) {
+      int16_t left = 0, right = 0;
+      stepper_get_steps(&left, &right);
+      printf("%d %d\n", left, right);
+    }
     if (down == BLACK) {
       obstacle = avoidBorderOrCrater(&pos, color_sensors[FORWARD_LOOKING]);
-      while (!stepper_steps_done()) {
+      while (!stepper_steps_done() && !should_die()) {
         sleep_msec(100);
       }
       continue;
@@ -208,6 +210,8 @@ int main(void) {
       pos.di = direction(&pos.di, rand);
     }
   }
+
+  stepper_reset();
 
   destroy_color_sensors(color_sensors);
   destroy_distance_sensors(distance_sensors);
