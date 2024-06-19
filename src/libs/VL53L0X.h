@@ -2,9 +2,10 @@
 #define VL53L0X_H_
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define VL53L0X_IDENTIFICATION_MODEL_ID (0xC0)
-#define VL53L0X_VHV_CONFIG_PAD_SCL_SDA_EXTSUP_HV (0x89) 
+#define VL53L0X_VHV_CONFIG_PAD_SCL_SDA_EXTSUP_HV (0x89)
 #define VL53L0X_MSRC_CONFIG_CONTROL (0x60)
 #define VL53L0X_FINAL_RANGE_CONFIG_MIN_COUNT_RATE_RTN_LIMIT (0x44)
 #define VL53L0X_SYSTEM_SEQUENCE_CONFIG (0x01)
@@ -20,9 +21,9 @@
 #define VL53L0X_RESULT_RANGE_STATUS (0x14)
 #define VL53L0X_SLAVE_DEVICE_ADDRESS (0x8A)
 
-#define VL53L0X_RANGE_SEQUENCE_STEP_TCC (0x10) /* Target CentreCheck */
+#define VL53L0X_RANGE_SEQUENCE_STEP_TCC (0x10)  /* Target CentreCheck */
 #define VL53L0X_RANGE_SEQUENCE_STEP_MSRC (0x04) /* Minimum Signal Rate Check */
-#define VL53L0X_RANGE_SEQUENCE_STEP_DSS (0x28) /* Dynamic SPAD selection */
+#define VL53L0X_RANGE_SEQUENCE_STEP_DSS (0x28)  /* Dynamic SPAD selection */
 #define VL53L0X_RANGE_SEQUENCE_STEP_PRE_RANGE (0x40)
 #define VL53L0X_RANGE_SEQUENCE_STEP_FINAL_RANGE (0x80)
 
@@ -51,20 +52,23 @@
 
 #define VL53L0X_OUT_OF_RANGE (8190)
 
-
 typedef struct {
   uint8_t address;
   uint16_t range;
+  uint16_t adjusted_range;
   uint8_t stop_variable;
+  float a;
+  float b;
 } vl53l0x_t;
 
 vl53l0x_t *vl53l0x_init(void);
-bool vl53l0x_read_range(vl53l0x_t *sensor);
 bool vl53l0x_read_default_regs(vl53l0x_t *sensor);
 bool vl53l0x_change_address(vl53l0x_t *sensor, uint8_t new_address);
 void vl53l0x_destroy(vl53l0x_t *sensor);
+void vl53l0x_calibration_dance(vl53l0x_t **distance_sensors, size_t sensor_count, const float calibration_matrix[]);
 
-void vl53l0x_read_mean_range (vl53l0x_t *sensor, uint16_t *range);
+// THE FUNCTION TO USE TO GET SINGLE MEASUREMENT OF RANGE
+uint16_t vl53l0x_get_single_optimal_range(vl53l0x_t *sensor);
 
-
+void vl53l0x_read_mean_range(vl53l0x_t *sensor, uint16_t *range);
 #endif

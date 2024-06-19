@@ -15,6 +15,9 @@ double incremental_mean(double new_value, double running_mean, size_t count);
 int map(int x, int in_min, int in_max, int out_min, int out_max);
 
 float generateRandomFloat(float min, float max);  //yes, this function was c+p from chatGPT, fuck off
+                                                  
+// https://stackoverflow.com/questions/5083465/fast-efficient-least-squares-fit-algorithm-in-c
+void linear_regression(size_t n, const float *x, const float *y, float *a, float *b);
 
 #define clamp(x, min, max) (x) > (max) ? (max) : (x) < (min) ? (min) : (x)
 

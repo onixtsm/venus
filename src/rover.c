@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+
 #include "libs/VL53L0X.h"
 #include "libs/measurements.h"
 #include "libs/movement.h"
@@ -26,6 +27,7 @@ void get_name(void) {
   }
   fclose(f);
 }
+
 
 void setup_pins(void) {
   switchbox_set_pin(IO_AR5, SWB_IIC1_SCL);
@@ -148,6 +150,8 @@ int main(void) {
 
   vl53l0x_t **distance_sensors = init_distance_sensors(3);
   tcs3472_t **color_sensors = init_color_sensors(2);
+
+  vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX) ;
 
   position_t pos = {0.0, 0.0, 90.0};  // initiating the coord system
   obstacle_data_t obstacle;           // allocate space for new obstacle

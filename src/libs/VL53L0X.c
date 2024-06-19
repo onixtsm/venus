@@ -1,13 +1,16 @@
 #include "VL53L0X.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "i2c.h"
-#include "../libs/measurements.h"
+#include "measurements.h"
+#include "movement.h"
+#include "src/settings.h"
 
 typedef enum { CALIBRATION_TYPE_VHV, CALIBRATION_TYPE_PHASE } calibration_type_t;
-
 
 // const uint8_t address = VL53L0X_DEFAULT_ADDRESS;
 // uint8_t stop_variable = 0;
@@ -187,6 +190,7 @@ bool static_init(vl53l0x_t *sensor) {
 
 vl53l0x_t *vl53l0x_init(void) {
   vl53l0x_t *sensor = malloc(sizeof(*sensor));
+  memset(sensor, 0, sizeof(*sensor));
   sensor->address = VL53L0X_DEFAULT_ADDRESS;
 
   if (ping_sensor(sensor)) {
@@ -332,6 +336,9 @@ bool vl53l0x_read_range(vl53l0x_t *sensor) {
   if (i2c_write8(sensor->address, VL53L0X_SYSTEM_INTERRUPT_CLEAR, 0x01, IIC0)) {
     return 1;
   }
+
+  sensor->adjusted_range = sensor->range * sensor->a + sensor->b;  // Least sqare
+
   if (sensor->range >= 8190) {
     sensor->range = VL53L0X_OUT_OF_RANGE;
   }
@@ -350,14 +357,55 @@ void vl53l0x_destroy(vl53l0x_t *sensor) {
     free(sensor);
   }
 }
-void vl53l0x_read_mean_range (vl53l0x_t *sensor, uint16_t *range){
+
+uint16_t vl53l0x_get_single_optimal_range(vl53l0x_t *sensor) {
+  vl53l0x_read_range(sensor);
+  return (sensor->adjusted_range) ? sensor->adjusted_range : sensor->range;
+}
+
+void vl53l0x_read_mean_range(vl53l0x_t *sensor, uint16_t *range) {
   int total = 0;
-  for (int i = 0; i < VL53L0X_READING_COUNT; i++){
+  for (int i = 0; i < VL53L0X_READING_COUNT; i++) {
     if (vl53l0x_read_range(sensor)) {
-	    ERROR();
+      ERROR();
     }
-    total += sensor->range;
+    total += vl53l0x_get_single_optimal_range(sensor);
     sleep_msec(75);
   }
   *range = total / VL53L0X_READING_COUNT;
+}
+
+void vl53l0x_calibration_dance(vl53l0x_t **distance_sensors, size_t sensor_count, const float calibration_matrix[]) {
+  // size_t y[MEASUREMENT_COUNT][VL53L0X_SENSOR_COUNT] = {{0}};
+  size_t calibration_matrix_size = 0;
+  while (calibration_matrix[calibration_matrix_size] != 0) {
+    calibration_matrix_size++;
+  }
+
+  float *measurements = malloc(sizeof(*measurements) * calibration_matrix_size * sensor_count);
+  float x[calibration_matrix_size];
+  for (size_t i = 0; i < calibration_matrix_size; ++i) {
+#if DEBUG_VL
+    LOG("PRESS ENTER AFTER YOU MOVED THE ROBOT AT RANGE %f", calibration_matrix[i]);
+    getchar();
+#endif
+    for (size_t j = 0; j < sensor_count; ++j) {
+      measurements[i * sizeof(*measurements) * calibration_matrix_size + j * sizeof(*measurements)] =
+          vl53l0x_get_single_optimal_range(distance_sensors[j]);
+    }
+    if (i + 1 == calibration_matrix_size) {
+      break;
+    }
+#ifndef DEBUG_VL
+    m_forward_or(calibration_matrix[i + 1] - calibration_matrix[i], backward);
+#endif
+  }
+
+  for (size_t i = 0; i < sensor_count; ++i) {
+    for (size_t j = 0; j < calibration_matrix_size; ++j) {
+      x[j] = measurements[j * sizeof(*measurements) * calibration_matrix_size + i * sizeof(*measurements)];
+    }
+    linear_regression(calibration_matrix_size, x, calibration_matrix, &distance_sensors[i]->a, &distance_sensors[i]->b);
+    LOG("a :%f, :b %f", distance_sensors[i]->a, distance_sensors[i]->b);
+  }
 }
