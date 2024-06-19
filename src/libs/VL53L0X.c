@@ -12,6 +12,8 @@
 #include "stepper.h"
 #include "util.h"
 
+#define OFFSET 30;
+
 typedef enum { CALIBRATION_TYPE_VHV, CALIBRATION_TYPE_PHASE } calibration_type_t;
 
 // const uint8_t address = VL53L0X_DEFAULT_ADDRESS;
@@ -374,7 +376,7 @@ void vl53l0x_read_mean_range(vl53l0x_t *sensor, uint16_t *range) {
     total += vl53l0x_get_single_optimal_range(sensor);
     sleep_msec(75);
   }
-  *range = total / VL53L0X_READING_COUNT;
+  *range = total / VL53L0X_READING_COUNT - OFFSET;
 }
 
 void vl53l0x_calibration_dance(vl53l0x_t **distance_sensors, size_t sensor_count, const float calibration_matrix[]) {

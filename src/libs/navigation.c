@@ -184,7 +184,7 @@ obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
 
   obstacle_data_t obstacle = {none, COLOR_COUNT, pos->x, pos->y};  
 
-  uint16_t distance[13] = {0};
+  uint16_t distance[14] = {0};
   uint16_t distance_low;
 
   m_turn_degrees(60, left);                              //turn 30 deg left
@@ -193,26 +193,29 @@ obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
     sleep_msec(100);
   }
   for(int i = 0; i < 12; i++){                           //repreats previous process
-    m_turn_degrees(10, right);
     vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
     distance[i] = distance_low;
+    m_turn_degrees(10, right);
   }
-  
-  for(int i = 0; i<12;i++){
+
+  vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
+  distance[12] = distance_low;
+
+  for(int i = 0; i<13;i++){
     LOG("%d\n", distance[i]);
   }
 
   m_turn_degrees(60, left);                              //repeat process to original position
   pos->di = direction(&pos->di, 30.0);
 
-  int index = 12;    //the index of the smallest distance
+  int index = 13;    //the index of the smallest distance
   distance[index] = 100;
-  for(int i = 0; i<12; i++){
+  for(int i = 0; i<13; i++){
     if(distance[i] < DISTANCE_FOR_SCOPE && distance[i] < distance[index]){
       index = i;
     }
   }
-  if(index!=12){
+  if(index!=13){
     m_turn_degrees(60 - index * 10, left);
     obstacle = scanHillOrRock(pos, distance_sensors, forward_looking);
   }
@@ -225,8 +228,8 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
 
   uint16_t distance_low = 8910, distance_middle = 8910, distance_high = 8910;
   vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
-  vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_middle);
-  vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_high);
+  vl53l0x_read_mean_range(distance_sensors[VL53L0X_MIDDLE], &distance_middle);
+  vl53l0x_read_mean_range(distance_sensors[VL53L0X_HIGH], &distance_high);
 
   LOG("Distance to high obstacle: %d \n", distance_high);
   LOG("Distance to middle obstacle: %d \n", distance_middle);
@@ -249,8 +252,8 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
       pos->x=  tPos.x;
       pos->y = tPos.y;
       vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
-      vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_middle);
-      vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_high);
+      vl53l0x_read_mean_range(distance_sensors[VL53L0X_MIDDLE], &distance_middle);
+      vl53l0x_read_mean_range(distance_sensors[VL53L0X_HIGH], &distance_high);
 
       LOG("Distance to high obstacle: %d \n", distance_high);
       LOG("Distance to middle obstacle: %d \n", distance_middle);

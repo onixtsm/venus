@@ -157,14 +157,13 @@ int main(void) {
   position_t pos = {0.0, 0.0, 90.0};  // initiating the coord system
   obstacle_data_t obstacle;           // allocate space for new obstacle
 
-  tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
-  tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
-  tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
-  tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
-  tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
-  tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
+  // tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
+  // tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
+  // tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
+  // tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
+  // tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
+  // tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
 
-  sleep_msec(1000);
 
   while (true) {  // exploration should work as follows:
 
