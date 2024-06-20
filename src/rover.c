@@ -16,7 +16,6 @@
 #include "src/libs/TCS3472.h"
 #include "util.h"
 
-
 void get_name(void) {
   char path[] = "/home/student/.name";
   FILE *f = fopen(path, "rb");
@@ -42,7 +41,7 @@ void setup_pins(void) {
 
   iic_init(IIC0);
   iic_init(IIC1);
-  
+
   uart_init(UART0);
   uart_reset_fifos(UART0);
   sleep_msec(1000);
@@ -162,17 +161,16 @@ int main(void) {
   vl53l0x_t **distance_sensors = init_distance_sensors(3);
   tcs3472_t **color_sensors = init_color_sensors(2);
 
-  send_ready_message(name);
+  // send_ready_message(name);
+  send_ready_status();
   LOG("READY!\nWAITING TO START");
-
-  while (!recv_start_message()) {
-     if (should_die()) {
-       break;
-     }
-  }
+  while (!recv_start_status() && !should_die());
   LOG("CALIBRATING SENSORS");
 
   vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
+  if (!strcmp(name, "Tars")) {
+    m_turn_degrees(90, right);
+  }
   m_turn_degrees(90, left);
 
   position_t pos = {0.0, 0.0, 90.0};  // initiating the coord system
@@ -181,7 +179,6 @@ int main(void) {
   obstacle.x = 0;
   obstacle.y = 0;
   obstacle.color = COLOR_COUNT;
-
 
   while (!should_die()) {  // exploration should work as follows:
 
