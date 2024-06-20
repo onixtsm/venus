@@ -162,10 +162,12 @@ int main(void) {
   vl53l0x_t **distance_sensors = init_distance_sensors(3);
   tcs3472_t **color_sensors = init_color_sensors(2);
 
-  send_ready_message(name);
+  //send_ready_message(name);
+  send_ready_status();
   LOG("READY!\nWAITING TO START");
 
-  while (!recv_start_message() && !should_die());
+  //while (!recv_start_message() && !should_die());
+  while (!recv_start_status() && !should_die());
   LOG("CALIBRATING SENSORS");
 
   vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);

@@ -37,7 +37,7 @@ typedef struct {
  * Enumeration for possible robot stata.
 */
 typedef enum {
-    IDLE, MOVING, SCANNED, COLLIDING
+    IDLE, MOVING, SCANNED, COLLIDING, READY, ACKNOWLEDGED
 } states;
 
 /**

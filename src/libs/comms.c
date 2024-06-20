@@ -193,6 +193,21 @@ void send_ready_message(char* name) {
   free(json);
 }
 
+void send_ready_status() {
+  robot_t robot = {NONE, NONE, READY};
+  obstacle_t obstacle = {NONE, NONE, NONE, NONE};
+  send_msg(robot, obstacle);
+}
+
+bool recv_start_status() {
+  robot_t* robot;
+  obstacle_t* obstacle;
+  if (uart_has_data(UART0))
+    rcv_msg(robot, obstacle);
+
+  return robot->status == ACKNOWLEDGED;
+}
+
 bool recv_start_message(void) {
   char *string = receive_json();
   bool returnable = string[0] != 0;

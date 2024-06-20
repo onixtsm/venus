@@ -25,4 +25,8 @@ void recv_msg(obstacle_t* obstacle, robot_t* robot);
 void send_ready_message(char *name);
 
 bool recv_start_message(void);
+
+void send_ready_status();
+
+bool recv_start_status();
 #endif
