@@ -19,6 +19,8 @@ float generateRandomFloat(float min, float max);  //yes, this function was c+p f
 // https://stackoverflow.com/questions/5083465/fast-efficient-least-squares-fit-algorithm-in-c
 void linear_regression(size_t n, const float *x, const float *y, float *a, float *b);
 
+bool should_die(void);
+
 #define clamp(x, min, max) (x) > (max) ? (max) : (x) < (min) ? (min) : (x)
 
 #define MAX(a, b) (a) > (b) ? (a) : (b)

@@ -68,3 +68,7 @@ void linear_regression(size_t n, const float *x, const float *y, float *a, float
   *a = (n * sumxy - sumx * sumy) / denom;
   *b = (sumy * sumx2 - sumx * sumxy) / denom;
 }
+
+bool should_die(void) {
+  return get_button_state(BUTTON0) || get_switch_state(SWITCH0);
+}

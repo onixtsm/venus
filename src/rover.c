@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "buttons.h"
+#include "libs/TCS3472.h"
 #include "libs/VL53L0X.h"
 #include "libs/comms.h"
 #include "libs/measurements.h"
@@ -15,9 +16,6 @@
 #include "src/libs/TCS3472.h"
 #include "util.h"
 
-bool should_die(void) {
-  return !get_button_state(BUTTON0);
-}
 
 void get_name(void) {
   char path[] = "/home/student/.name";
@@ -47,6 +45,7 @@ void setup_pins(void) {
   
   uart_init(UART0);
   uart_reset_fifos(UART0);
+  sleep_msec(1000);
 
   for (size_t i = 0; i < sizeof(distance_sensor_x_pins); ++i) {
     gpio_set_direction(distance_sensor_x_pins[i], GPIO_DIR_OUTPUT);
@@ -152,6 +151,7 @@ void destroy_color_sensors(tcs3472_t **sensors) {
 int main(void) {
   pynq_init();
   buttons_init();
+  switches_init();
   get_name();
   setup_pins();
 
@@ -165,13 +165,23 @@ int main(void) {
   send_ready_message(name);
   LOG("READY!\nWAITING TO START");
 
-  while (!recv_start_message() && !should_die());
+  while (!recv_start_message()) {
+     if (should_die()) {
+       break;
+     }
+  }
   LOG("CALIBRATING SENSORS");
 
   vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
+  m_turn_degrees(90, left);
 
   position_t pos = {0.0, 0.0, 90.0};  // initiating the coord system
   obstacle_data_t obstacle;           // allocate space for new obstacle
+  obstacle.type = 0;
+  obstacle.x = 0;
+  obstacle.y = 0;
+  obstacle.color = COLOR_COUNT;
+
 
   while (!should_die()) {  // exploration should work as follows:
 

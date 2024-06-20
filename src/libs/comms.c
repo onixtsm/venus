@@ -4,6 +4,8 @@
 #include <libpynq.h>
 #include <stdio.h>
 
+#include "uart.h"
+
 // json variable
 char* json;
 
@@ -194,8 +196,11 @@ void send_ready_message(char* name) {
 }
 
 bool recv_start_message(void) {
-  char *string = receive_json();
-  bool returnable = string[0] != 0;
-  free(string);
-  return returnable;
+  if (uart_has_data(UART0)) {
+    char* string = receive_json();
+    bool returnable = string[0] != 0;
+    free(string);
+    return returnable;
+  } 
+  return false;
 }

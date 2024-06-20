@@ -241,6 +241,9 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
   if (distance_low < DISTANCE_FOR_SCOPE){
     
     while (distance_middle > DISTANCE_FOR_COLOR && distance_low > DISTANCE_FOR_COLOR && distance_high > DISTANCE_FOR_COLOR){             //while the distance to the object is too large
+      if (should_die()) {
+        break;
+      }
       position_t tPos = {0.0, 0.0, 90.0};
       m_forward_or(1, forward);                            //move forward 1cm
       tPos.x += cos(pos->di);                             //update its position
@@ -261,7 +264,6 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
       // getchar();
 
     }
-    getchar();
     vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
     vl53l0x_read_mean_range(distance_sensors[VL53L0X_MIDDLE], &distance_middle);
     vl53l0x_read_mean_range(distance_sensors[VL53L0X_HIGH], &distance_high);
