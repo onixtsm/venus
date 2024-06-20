@@ -180,7 +180,7 @@ obstacle_data_t scanBorderCrater(position_t *pos, tcs3472_t *forward_looking) {
   return obstacle;
 }
 
-obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking){
+obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down){
 
   obstacle_data_t obstacle = {none, COLOR_COUNT, pos->x, pos->y};  
 
@@ -217,12 +217,12 @@ obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
   }
   if(index!=13){
     m_turn_degrees(60 - index * 10, left);
-    obstacle = scanHillOrRock(pos, distance_sensors, forward_looking);
+    obstacle = scanHillOrRock(pos, distance_sensors, forward_looking, down);
   }
   return obstacle;
 }
 
-obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking){
+obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down){
 
   obstacle_data_t obstacle = {none, COLOR_COUNT, pos->x, pos->y};
 
@@ -249,7 +249,7 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
       tPos.x += cos(pos->di);                             //update its position
       tPos.y += sin(pos->di);
       while(!stepper_steps_done()){
-        // killSwitchScan(pos, &tPos);
+        killSwitchScan(pos, &tPos, down);
         sleep_msec(100);
       }
       pos->x=  tPos.x;

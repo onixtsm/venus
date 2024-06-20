@@ -202,12 +202,13 @@ void send_ready_status() {
 }
 
 bool recv_start_status(void) {
-  robot_t* robot = {0};
-  obstacle_t* obstacle = {0};
-  if (uart_has_data(UART0))
-    recv_msg(obstacle, robot);
+  robot_t robot = {0};
+  obstacle_t obstacle = {0};
+  if (uart_has_data(UART0)) {
+    recv_msg(&obstacle, &robot);
+  }
+  return robot.status == ACKNOWLEDGED;
 
-  return robot->status == ACKNOWLEDGED;
 }
 
 bool recv_start_message(void) {

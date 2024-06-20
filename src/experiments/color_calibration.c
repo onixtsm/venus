@@ -5,15 +5,15 @@
 #include "../libs/measurements.h"
 int main(void) {
   pynq_init();
-  switchbox_set_pin(IO_AR_SCL, SWB_IIC0_SCL);
-  switchbox_set_pin(IO_AR_SDA, SWB_IIC0_SDA);
+  switchbox_set_pin(IO_AR5, SWB_IIC1_SCL);
+  switchbox_set_pin(IO_AR4, SWB_IIC1_SDA);
 
-  iic_init(IIC0);
+  iic_init(IIC1);
   buttons_init();
 
   tcs3472_t *sensor;
 
-  if ((sensor = tcs3472_init(IIC0)) == NULL) {
+  if ((sensor = tcs3472_init(IIC1)) == NULL) {
     fprintf(stderr, "Not init iic0\n");
     return 1;
   }

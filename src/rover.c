@@ -167,12 +167,14 @@ int main(void) {
   while (!recv_start_status() && !should_die());
   LOG("CALIBRATING SENSORS");
 
-  vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
+  if (!should_die()) {
+    vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
+    m_turn_degrees(90, left);
+  }
   position_t pos = {0.0, 0.0, 90.0};
   if (!strcmp(name, "Tars")) {
     pos.di = 270;
   }
-  m_turn_degrees(90, left);
 
   obstacle_data_t obstacle;  // allocate space for new obstacle
   obstacle.type = 0;
@@ -181,14 +183,15 @@ int main(void) {
   obstacle.color = COLOR_COUNT;
 
   while (!should_die()) {  // exploration should work as follows:
+    robot_t robot = {obstacle.x, obstacle.y, IDLE};
+    obstacle_t ob = {obstacle.x, obstacle.y, obstacle.color, obstacle.type};
+    send_msg(ob, robot);
 
     LOG("Sending complete!\nType: %d\nColor: %s\nx: %f, y: %f\n", obstacle.type, COLOR_NAME((size_t)obstacle.color), obstacle.x,
         obstacle.y);
 
     color_t front = tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
     color_t down = tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
-    print_colors(color_sensors[FORWARD_LOOKING]);
-    print_colors(color_sensors[DOWN_LOOKING]);
     LOG("Downwards color %s", COLOR_NAME(down));
 
     while (!stepper_steps_done() && !should_die()) {
@@ -203,7 +206,7 @@ int main(void) {
       }
       continue;
     }
-    obstacle = scanScope(&pos, distance_sensors, color_sensors[FORWARD_LOOKING]);
+    obstacle = scanScope(&pos, distance_sensors, color_sensors[FORWARD_LOOKING], color_sensors[DOWN_LOOKING]);
 
     position_t tPos = {0.0, 0.0, 90.0};
     if (obstacle.type == none) {

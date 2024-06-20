@@ -3,8 +3,9 @@
 #include "gpio.h"
 #define DEBUG_VL
 
-#define XS1 IO_AR0
-#define XS2 IO_AR1
+#define XS0 IO_AR6
+#define XS1 IO_AR7
+#define XS2 IO_AR8
 
 int main(void) {
   pynq_init();
@@ -13,14 +14,17 @@ int main(void) {
   switchbox_set_pin(IO_AR_SDA, SWB_IIC0_SDA);
   iic_init(IIC0);
 
+  gpio_set_direction(XS0, GPIO_DIR_OUTPUT);
   gpio_set_direction(XS1, GPIO_DIR_OUTPUT);
   gpio_set_direction(XS2, GPIO_DIR_OUTPUT);
 
+  gpio_set_level(XS0, 0);
   gpio_set_level(XS1, 0);
   gpio_set_level(XS2, 0);
 
   vl53l0x_t *sensors[3] = {0};
 
+  gpio_set_level(XS0, 1);
   sensors[0] = vl53l0x_init();
   vl53l0x_change_address(sensors[0], 0x69);
 

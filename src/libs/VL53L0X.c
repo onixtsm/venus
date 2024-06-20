@@ -66,15 +66,15 @@ bool vl53l0x_read_default_regs(vl53l0x_t *sensor) {
   uint16_t b;
 
   i2c_read8(sensor->address, 0xC0, &a, IIC0);
-  LOG("0xC0: %02x\n", a);
+  LOG("0xC0: %02x", a);
   i2c_read8(sensor->address, 0xC1, &a, IIC0);
-  LOG("0xC1: %02x\n", a);
+  LOG("0xC1: %02x", a);
   i2c_read8(sensor->address, 0xC2, &a, IIC0);
-  LOG("0xC2: %02x\n", a);
+  LOG("0xC2: %02x", a);
   i2c_read16_inv(sensor->address, 0x51, &b, IIC0);
-  LOG("0x51: %04x\n", b);
+  LOG("0x51: %04x", b);
   i2c_read16_inv(sensor->address, 0x61, &b, IIC0);
-  LOG("0x61: %04x\n", b);
+  LOG("0x61: %04x", b);
   return 0;
 }
 
@@ -160,18 +160,18 @@ bool perform_ref_calibration(vl53l0x_t *sensor) {
     ERROR();
     return 1;
   }
-  LOG("Calibrated CALIBRATION_TYPE_VHV\n");
+  LOG("Calibrated CALIBRATION_TYPE_VHV");
   if (perform_single_ref_calibration(sensor, CALIBRATION_TYPE_PHASE)) {
     ERROR();
     return 1;
   }
-  LOG("Calibrated CALIBRATION_TYPE_PHASE\n");
+  LOG("Calibrated CALIBRATION_TYPE_PHASE");
   if (set_sequence_steps_enabled(sensor, VL53L0X_RANGE_SEQUENCE_STEP_DSS + VL53L0X_RANGE_SEQUENCE_STEP_PRE_RANGE +
                                              VL53L0X_RANGE_SEQUENCE_STEP_FINAL_RANGE)) {
     ERROR();
     return 1;
   }
-  LOG("Sequence steps enabled\n");
+  LOG("Sequence steps enabled");
   return 0;
 }
 
@@ -201,23 +201,23 @@ vl53l0x_t *vl53l0x_init(void) {
     ERROR();
     goto borked;
   }
-  LOG("Device connected(1/4)\n");
+  LOG("Device connected(1/4)");
 
   if (data_init(sensor)) {
     ERROR();
     goto borked;
   }
-  LOG("Data initialisesd(2/4)\n");
+  LOG("Data initialisesd(2/4)");
   if (static_init(sensor)) {
     ERROR();
     goto borked;
   }
-  LOG("Static init done(3/4)\n");
+  LOG("Static init done(3/4)");
   if (perform_ref_calibration(sensor)) {
     ERROR();
     goto borked;
   }
-  LOG("Calibration done(4/4)\n");
+  LOG("Calibration done(4/4)");
 
   return sensor;
 borked:
@@ -365,7 +365,8 @@ void vl53l0x_destroy(vl53l0x_t *sensor) {
 
 uint16_t vl53l0x_get_single_optimal_range(vl53l0x_t *sensor) {
   vl53l0x_read_range(sensor);
-  return (sensor->adjusted_range) ? sensor->adjusted_range : sensor->range;
+  //return (sensor->adjusted_range) ? sensor->adjusted_range : sensor->range;
+  return sensor->range-30;
 }
 
 void vl53l0x_read_mean_range(vl53l0x_t *sensor, uint16_t *range) {
@@ -396,14 +397,16 @@ void vl53l0x_calibration_dance(vl53l0x_t **distance_sensors, size_t sensor_count
 #endif
     for (size_t j = 0; j < sensor_count; ++j) {
       measurements[i + calibration_matrix_size * j] = vl53l0x_get_single_optimal_range(distance_sensors[j]);
+      LOG("%fmm ", measurements[i + calibration_matrix_size * j]);
     }
 #ifndef DEBUG_VL
-    if (i + 1 != calibration_matrix_size) {
-      m_forward_or((calibration_matrix[i + 1] - calibration_matrix[i]) / 10 / 2,
+    if (calibration_matrix[i+1] != 0) {
+      m_forward_or((calibration_matrix[i + 1] - calibration_matrix[i]) / 10 / 2, // add beck / 2
                    backward);  // At last move it will go a calibration_matrix[i] forward;
       while (!stepper_steps_done()) {
         sleep_msec(30);
       }
+      sleep_msec(500);
     }
 #endif
   }

@@ -127,9 +127,8 @@ void print_colors(tcs3472_t *sensor) { LOG("c: %d, r: %d, g: %d, b: %d\n", senso
 color_t tcs3472_determine_single_color(tcs3472_t *sensor) {
   tcs3472_read_colors(sensor);
   hsl_t hsl_colors = rgb_to_hsl(sensor);
-  LOG("%f\n", hsl_colors.h);
 
-  if (hsl_colors.l < 0.01) {
+  if (hsl_colors.l < 0.06) {
     return BLACK;
   }
   if (hsl_colors.l > 0.2) {
