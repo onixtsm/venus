@@ -9,6 +9,7 @@
 #include "measurements.h"
 #include "movement.h"
 #include "VL53L0X.h"
+#include "src/libs/vtypes.h"
 
 // Initialization of global variables for the movement
 static coordinates_t g_final_position = {0.0, 0.0};
@@ -159,8 +160,8 @@ void killSwitchScan(position_t *pos, position_t *tPos, tcs3472_t *down_looking) 
   pos->y = tPos->y;
 }
 
-obstacle_data_t avoidBorderOrCrater(position_t *pos, tcs3472_t *forward_looking) {
-  obstacle_data_t obstacle = {none, COLOR_COUNT, pos->x, pos->y};
+obstacle_t avoidBorderOrCrater(position_t *pos, tcs3472_t *forward_looking) {
+  obstacle_t  obstacle = {pos->x, pos->y, COLOR_COUNT, NONE};
   obstacle = scanBorderCrater(pos, forward_looking);
 
   m_turn_degrees(60, left);  // while the robot is still on the border
@@ -168,21 +169,21 @@ obstacle_data_t avoidBorderOrCrater(position_t *pos, tcs3472_t *forward_looking)
   return obstacle;
 }
 
-obstacle_data_t scanBorderCrater(position_t *pos, tcs3472_t *forward_looking) {
-  obstacle_data_t obstacle;
+obstacle_t scanBorderCrater(position_t *pos, tcs3472_t *forward_looking) {
+  obstacle_t obstacle;
 
   float rads = pos->di * pi / 180;
   obstacle.x = pos->x + 6 * cos(rads);
   obstacle.y = pos->y + 6 * sin(rads);
 
-  obstacle.type = border;
+  obstacle.type = WALL;
   obstacle.color = tcs3472_determine_color(forward_looking);
   return obstacle;
 }
 
-obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down){
+obstacle_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down){
 
-  obstacle_data_t obstacle = {none, COLOR_COUNT, pos->x, pos->y};  
+  obstacle_t obstacle = {pos->x, pos->y, COLOR_COUNT, NONE};  
 
   uint16_t distance[14] = {0};
   uint16_t distance_low;
@@ -201,10 +202,6 @@ obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
   vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
   distance[12] = distance_low;
 
-  for(int i = 0; i<13;i++){
-    LOG("%d\n", distance[i]);
-  }
-
   m_turn_degrees(60, left);                              //repeat process to original position
   pos->di = direction(&pos->di, 30.0);
 
@@ -222,9 +219,9 @@ obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
   return obstacle;
 }
 
-obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down){
+obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down){
 
-  obstacle_data_t obstacle = {none, COLOR_COUNT, pos->x, pos->y};
+  obstacle_t obstacle = {pos->x, pos->y, COLOR_COUNT, NONE};
 
   uint16_t distance_low = 8910, distance_middle = 8910, distance_high = 8910;
   vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
@@ -268,20 +265,20 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
     vl53l0x_read_mean_range(distance_sensors[VL53L0X_MIDDLE], &distance_middle);
     vl53l0x_read_mean_range(distance_sensors[VL53L0X_HIGH], &distance_high);
     if (distance_low >= distance_high - 20 && distance_low <= distance_high + 20){    //readings of distance sensors must be within 20mm of each other to be considered the same
-      obstacle.type = hill;
+      obstacle.type = HILL;
       LOG("hill\n");
     } else if (distance_low >= distance_middle - 200 && distance_low <= distance_middle + 200){
-      obstacle.type = bigRock;
+      obstacle.type = BIG_ROCK;
       LOG("big rock\n");
     } else{
-      obstacle.type = smallRock;
+      obstacle.type = SMALL_ROCK;
       LOG("small rock\n");
     }
     float rads = pos->di * pi / 180;
     obstacle.x = pos->x + 6 * cos(rads);
     obstacle.y = pos->y + 6 * sin(rads);       //set the coordinates of the obstacle
     color_t c = tcs3472_determine_color(forward_looking);
-    LOG("%d", c);
+    LOG("front color: %d", c);
     obstacle.color = c;
   }
   return obstacle;

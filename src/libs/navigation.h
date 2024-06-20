@@ -4,6 +4,7 @@
 
 #include "TCS3472.h"
 #include "VL53L0X.h"
+#include "src/libs/vtypes.h"
 
 typedef struct _coordinates_t {
   float x_coord;  // In mm
@@ -15,15 +16,6 @@ typedef struct {
   double y;
   double di;
 } position_t;
-
-typedef enum { none, border, crater, smallRock, bigRock, hill } obstacle_type_t;
-
-typedef struct {
-  obstacle_type_t type;
-  color_t color;
-  double x;
-  double y;
-} obstacle_data_t;
 
 typedef enum { NAVIG_NONE, NAVIG_TURNING, NAVIG_MOVING } navig_movement_t;
 
@@ -72,12 +64,12 @@ float navig_get_current_heading(void);
 
 double direction(double *di, double ddi);  // updates direction properl
                                            //
-obstacle_data_t avoidBorderOrCrater(position_t *pos, tcs3472_t *forward_looking);
-obstacle_data_t scanBorderCrater(position_t *pos, tcs3472_t *forward_looking);
+obstacle_t avoidBorderOrCrater(position_t *pos, tcs3472_t *forward_looking);
+obstacle_t scanBorderCrater(position_t *pos, tcs3472_t *forward_looking);
 void killSwitchScan(position_t *pos, position_t *tPos, tcs3472_t *down_looking);
 
-obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down);
+obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down);
 
-obstacle_data_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down);
+obstacle_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down);
 
 #endif

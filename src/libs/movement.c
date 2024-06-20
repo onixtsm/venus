@@ -11,10 +11,9 @@ void m_turn_degrees(float degrees, directionLR d)  // direction input should be 
     stepper_steps(-steps, steps);
   } else  // turns left
   {
-    printf("turning left\n");
     stepper_steps(steps, -steps);
   }
-  while(!stepper_steps_done()){
+  while (!stepper_steps_done()) {
     sleep_msec(100);
   }
 }
@@ -26,7 +25,7 @@ void m_forward_or(float distance, directionFB d) {
   } else {
     stepper_steps(-steps, -steps);
   }
-  while(!stepper_steps_done()){
+  while (!stepper_steps_done()) {
     sleep_msec(100);
   }
 }

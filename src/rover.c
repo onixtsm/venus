@@ -14,6 +14,7 @@
 #include "libs/navigation.h"
 #include "settings.h"
 #include "src/libs/TCS3472.h"
+#include "src/libs/vtypes.h"
 #include "util.h"
 
 void get_name(void) {
@@ -176,7 +177,7 @@ int main(void) {
     pos.di = 270;
   }
 
-  obstacle_data_t obstacle;  // allocate space for new obstacle
+  obstacle_t obstacle;  // allocate space for new obstacle
   obstacle.type = 0;
   obstacle.x = 0;
   obstacle.y = 0;
@@ -184,8 +185,7 @@ int main(void) {
 
   while (!should_die()) {  // exploration should work as follows:
     robot_t robot = {obstacle.x, obstacle.y, IDLE};
-    obstacle_t ob = {obstacle.x, obstacle.y, obstacle.color, obstacle.type};
-    send_msg(ob, robot);
+    send_msg(obstacle, robot);
 
     LOG("Sending complete!\nType: %d\nColor: %s\nx: %f, y: %f\n", obstacle.type, COLOR_NAME((size_t)obstacle.color), obstacle.x,
         obstacle.y);
@@ -193,6 +193,7 @@ int main(void) {
     color_t front = tcs3472_determine_color(color_sensors[FORWARD_LOOKING]);
     color_t down = tcs3472_determine_color(color_sensors[DOWN_LOOKING]);
     LOG("Downwards color %s", COLOR_NAME(down));
+    LOG("Front color %s", COLOR_NAME(front));
 
     while (!stepper_steps_done() && !should_die()) {
       int16_t left = 0, right = 0;
@@ -209,7 +210,7 @@ int main(void) {
     obstacle = scanScope(&pos, distance_sensors, color_sensors[FORWARD_LOOKING], color_sensors[DOWN_LOOKING]);
 
     position_t tPos = {0.0, 0.0, 90.0};
-    if (obstacle.type == none) {
+    if (obstacle.type == NONE) {
       float rads = pos.di * pi / 180;
       tPos.x += 5 * cos(rads);
       tPos.y += 5 * sin(rads);
