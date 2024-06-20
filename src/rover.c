@@ -214,7 +214,7 @@ int main(void) {
       tPos.x += 5 * cos(rads);
       tPos.y += 5 * sin(rads);
 
-      m_forward_or(5, forward);
+      m_forward_or(10, forward);
       killSwitchScan(&pos, &tPos, color_sensors[DOWN_LOOKING]);
 
     } else {

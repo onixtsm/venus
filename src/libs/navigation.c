@@ -270,7 +270,7 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
     if (distance_low >= distance_high - 20 && distance_low <= distance_high + 20){    //readings of distance sensors must be within 20mm of each other to be considered the same
       obstacle.type = hill;
       LOG("hill\n");
-    } else if (distance_low >= distance_middle - 20 && distance_low <= distance_middle + 20){
+    } else if (distance_low >= distance_middle - 200 && distance_low <= distance_middle + 200){
       obstacle.type = bigRock;
       LOG("big rock\n");
     } else{
@@ -280,7 +280,9 @@ obstacle_data_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tc
     float rads = pos->di * pi / 180;
     obstacle.x = pos->x + 6 * cos(rads);
     obstacle.y = pos->y + 6 * sin(rads);       //set the coordinates of the obstacle
-    obstacle.color = tcs3472_determine_color(forward_looking);
+    color_t c = tcs3472_determine_color(forward_looking);
+    LOG("%d", c);
+    obstacle.color = c;
   }
   return obstacle;
 }
