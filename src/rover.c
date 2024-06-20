@@ -39,8 +39,14 @@ void setup_pins(void) {
   switchbox_set_pin(IO_AR_SCL, SWB_IIC0_SCL);
   switchbox_set_pin(IO_AR_SDA, SWB_IIC0_SDA);
 
+  switchbox_set_pin(IO_AR0, SWB_UART0_RX);
+  switchbox_set_pin(IO_AR1, SWB_UART0_TX);
+
   iic_init(IIC0);
   iic_init(IIC1);
+  
+  uart_init(UART0);
+  uart_reset_fifos(UART0);
 
   for (size_t i = 0; i < sizeof(distance_sensor_x_pins); ++i) {
     gpio_set_direction(distance_sensor_x_pins[i], GPIO_DIR_OUTPUT);
