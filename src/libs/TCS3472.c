@@ -1,16 +1,19 @@
 #include "TCS3472.h"
 
 #include <libpynq.h>
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "../libs/measurements.h"
 #include "../settings.h"
 #include "i2c.h"
-#include "util.h"
 
 // https://github.com/adafruit/Adafruit_TCS34725/tree/master
+//
+
+bool set_integration_time(vl53l0x_t *sensor) {
+bool err = i2c_write8(TCS3472_ADDR, TCS3472_REG_AT, uint8_t a, iic_index_t iic)TCS3472_ATIME_REG
+}
 
 tcs3472_t *tcs3472_init(int iic) {
   tcs3472_t *sensor = malloc(sizeof(*sensor));
@@ -25,6 +28,8 @@ tcs3472_t *tcs3472_init(int iic) {
     return NULL;
   }
   sensor->iic = iic;
+
+  set_integration_time()
   return sensor;
 }
 
@@ -79,30 +84,10 @@ bool tcs3472_disable(tcs3472_t *sensor) {
 }
 
 void print_colors(tcs3472_t *sensor) { LOG("c: %d, r: %d, g: %d, b: %d\n", sensor->c, sensor->r, sensor->g, sensor->b); }
-/*
-color_t tcs3472_determine_color(tcs3472_t *sensor) {
-  print_colors(sensor);
-  if (sensor->c < 0.5 * WHITE_SENSITIVITY) {
-    return BLACK;
-  }
-  float rr = (float)sensor->c / sensor->r;
-  float rg = (float)sensor->c / sensor->g;
-  float rb = (float)sensor->c / sensor->b;
-
-  if (fabs(rr - rg) < TRESHHOLD && fabs(rr - rb) < TRESHHOLD && fabs(rg - rb) < TRESHHOLD) {
-    return WHITE;
-  }
-  float max = MAX(sensor->r, MAX(sensor->g, sensor->b));
-  if (max == sensor->r) return RED;
-  if (max == sensor->g) return GREEN;
-  if (max == sensor->b) return BLUE;
-  return WHITE;
-}
-*/
 
 color_t tcs3472_determine_single_color(tcs3472_t *sensor) {
   tcs3472_read_colors(sensor);
-  if (sensor->c == 0) {
+  if (sensor->c == 0 || sensor->g == 0 || sensor->r == 0 || sensor->b == 0) {
     return COLOR_COUNT;
   }
   float nr = (float)sensor->r / sensor->c;
@@ -114,7 +99,6 @@ color_t tcs3472_determine_single_color(tcs3472_t *sensor) {
   float rr = nr / sum;
   float rg = ng / sum;
   float rb = nb / sum;
-
   if (sensor->c < BLACK_TRESHOLD) {
     return BLACK;
   }
@@ -138,18 +122,20 @@ color_t tcs3472_determine_color(tcs3472_t *sensor) {
   for (size_t i = 0; i < TCS3472_READING_COUNT; ++i) {
     color_t color;
     do {color = tcs3472_determine_single_color(sensor);
-      sleep_msec(100);
+      sleep_msec(35);
     } while (color == COLOR_COUNT);
     sleep_msec(100);
     a[color]++;
   }
-  color_t max = COLOR_COUNT;
+  size_t index, max = 0;
+
   for (size_t i = 0; i < COLOR_COUNT; ++i) {
-    if (a[i] > max) {
-      max = i;
+    if (max < a[i]) {
+      max = a[i];
+      index = i;
     }
   }
-  return max;
+  return index;
 }
 
 const char *COLOR_NAME(size_t index) {

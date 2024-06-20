@@ -21,15 +21,21 @@ int main(void) {
     fprintf(stderr, "Cannot enable tcs0\n");
     return 1;
   }
+  
   while (1) {
     if (get_button_state(BUTTON0)) {
       break;
     }
-    tcs3472_read_colors(sensor);
+    color_t color = tcs3472_determine_color(sensor);
     printf("Sensor 0\n\tc: %d, r: %d, g: %d, b: %d\n", sensor->c, sensor->r, sensor->g, sensor->b);
-    printf("%s\n", COLOR_NAME(tcs3472_determine_color(sensor)));
+    char *s = COLOR_NAME(color);
+    if (s != NULL) {
+      printf("%s\n", COLOR_NAME(color));
 
-    
+    } else {
+      printf("wrong color %d", color);
+    }
+
     printf("========================\n");
     getchar();
   }

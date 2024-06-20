@@ -168,13 +168,13 @@ int main(void) {
   LOG("CALIBRATING SENSORS");
 
   vl53l0x_calibration_dance(distance_sensors, VL53L0X_SENSOR_COUNT, CALIBRATION_MATRIX);
+  position_t pos = {0.0, 0.0, 90.0};
   if (!strcmp(name, "Tars")) {
-    m_turn_degrees(90, right);
+    pos.di = 270;
   }
   m_turn_degrees(90, left);
 
-  position_t pos = {0.0, 0.0, 90.0};  // initiating the coord system
-  obstacle_data_t obstacle;           // allocate space for new obstacle
+  obstacle_data_t obstacle;  // allocate space for new obstacle
   obstacle.type = 0;
   obstacle.x = 0;
   obstacle.y = 0;

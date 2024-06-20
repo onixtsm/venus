@@ -16,6 +16,8 @@
 #define TCS3472_REG_R 0x16
 #define TCS3472_REG_G 0x18
 #define TCS3472_REG_B 0x1A
+#define TC3472_REG_ATIME 0x01
+
 typedef enum { RED, GREEN, BLUE, WHITE, BLACK, COLOR_COUNT } color_t;
 
 static const char *color_names[COLOR_COUNT+1] = {"RED", "GREEN", "BLUE", "WHITE", "BLACK", "UNKNOWN"};
@@ -25,6 +27,7 @@ typedef struct {
   uint16_t iic;
   bool enable;
   uint16_t c, r, g, b;
+  size_t integration_time_ns;
 } tcs3472_t;
 
 const char *COLOR_NAME(size_t index);
