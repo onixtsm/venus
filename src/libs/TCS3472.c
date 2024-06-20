@@ -1,6 +1,7 @@
 #include "TCS3472.h"
 
 #include <libpynq.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -11,8 +12,46 @@
 // https://github.com/adafruit/Adafruit_TCS34725/tree/master
 //
 
-bool set_integration_time(vl53l0x_t *sensor) {
-bool err = i2c_write8(TCS3472_ADDR, TCS3472_REG_AT, uint8_t a, iic_index_t iic)TCS3472_ATIME_REG
+bool set_integration_time(tcs3472_t *sensor) {
+  bool err = i2c_write8(TCS3472_ADDR, TC3472_REG_ATIME, 60, sensor->iic);
+  if (!err) {
+    sensor->integration_time_ns = 60;
+  }
+  return err;
+}
+
+hsl_t rgb_to_hsl(tcs3472_t *sensor) {
+  hsl_t hsl_color;
+  float nr = (float)sensor->r / 30000;
+  float ng = (float)sensor->g / 30000;
+  float nb = (float)sensor->b / 30000;
+
+  float c_max = MAX(nr, MAX(ng, nb));
+  float c_min = MIN(nr, MIN(ng, nb));
+
+  float delta = c_max - c_min;
+
+  hsl_color.l = (c_max + c_min) / 2;
+
+  if (delta == 0) {
+    hsl_color.h = 0;
+  } else if (c_max == nr) {
+    hsl_color.h = (((ng - nb) / delta));
+  } else if (c_max == ng) {
+    hsl_color.h = (((nb - nr) / delta + 2));
+  } else {
+    hsl_color.h = (((nr - ng) / delta + 4));
+  }
+
+  if (delta == 0) {
+    hsl_color.s = 0;
+  } else {
+    hsl_color.s = delta / (1 - fabsf(2 * hsl_color.l - 1));
+  }
+  while (hsl_color.h > 1) {
+    hsl_color.h -= 1;
+  }
+  return hsl_color;
 }
 
 tcs3472_t *tcs3472_init(int iic) {
@@ -29,7 +68,7 @@ tcs3472_t *tcs3472_init(int iic) {
   }
   sensor->iic = iic;
 
-  set_integration_time()
+  set_integration_time(sensor);
   return sensor;
 }
 
@@ -87,41 +126,33 @@ void print_colors(tcs3472_t *sensor) { LOG("c: %d, r: %d, g: %d, b: %d\n", senso
 
 color_t tcs3472_determine_single_color(tcs3472_t *sensor) {
   tcs3472_read_colors(sensor);
-  if (sensor->c == 0 || sensor->g == 0 || sensor->r == 0 || sensor->b == 0) {
-    return COLOR_COUNT;
-  }
-  float nr = (float)sensor->r / sensor->c;
-  float ng = (float)sensor->g / sensor->c;
-  float nb = (float)sensor->b / sensor->c;
+  hsl_t hsl_colors = rgb_to_hsl(sensor);
+  LOG("%f\n", hsl_colors.h);
 
-  float sum = nr + ng + nb;
-
-  float rr = nr / sum;
-  float rg = ng / sum;
-  float rb = nb / sum;
-  if (sensor->c < BLACK_TRESHOLD) {
+  if (hsl_colors.l < 0.01) {
     return BLACK;
   }
-  if (sensor->c > WHITE_TRESHOLD) {
+  if (hsl_colors.l > 0.2) {
     return WHITE;
   }
-  if (rr > rg && rr > rb) {
+  if (hsl_colors.h >= 0 && hsl_colors.h < 1.0/3) {
     return RED;
   }
-  if (rg > rr && rg > rb) {
-    return GREEN;
-  }
-  if (rb > rr && rb > rg) {
+  if (hsl_colors.h >= 1.0/3 && hsl_colors.h < 2.0/3) {
     return BLUE;
   }
-  return WHITE;
+  if (hsl_colors.h >= 2.0/3 && hsl_colors.h <= 1) {
+    return GREEN;
+  }
+  return COLOR_COUNT;
 }
 
 color_t tcs3472_determine_color(tcs3472_t *sensor) {
   color_t a[COLOR_COUNT] = {0};
   for (size_t i = 0; i < TCS3472_READING_COUNT; ++i) {
     color_t color;
-    do {color = tcs3472_determine_single_color(sensor);
+    do {
+      color = tcs3472_determine_single_color(sensor);
       sleep_msec(35);
     } while (color == COLOR_COUNT);
     sleep_msec(100);

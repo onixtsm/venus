@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "../libs/TCS3472.h"
+#include "../libs/measurements.h"
 int main(void) {
   pynq_init();
   switchbox_set_pin(IO_AR_SCL, SWB_IIC0_SCL);
@@ -26,15 +27,8 @@ int main(void) {
     if (get_button_state(BUTTON0)) {
       break;
     }
-    color_t color = tcs3472_determine_color(sensor);
-    printf("Sensor 0\n\tc: %d, r: %d, g: %d, b: %d\n", sensor->c, sensor->r, sensor->g, sensor->b);
-    char *s = COLOR_NAME(color);
-    if (s != NULL) {
-      printf("%s\n", COLOR_NAME(color));
-
-    } else {
-      printf("wrong color %d", color);
-    }
+    color_t color = tcs3472_determine_single_color(sensor);
+    LOG("%s\n", COLOR_NAME(color));
 
     printf("========================\n");
     getchar();

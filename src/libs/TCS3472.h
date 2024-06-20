@@ -20,6 +20,12 @@
 
 typedef enum { RED, GREEN, BLUE, WHITE, BLACK, COLOR_COUNT } color_t;
 
+typedef struct {
+  float h;
+  float s;
+  float l;
+} hsl_t;
+
 static const char *color_names[COLOR_COUNT+1] = {"RED", "GREEN", "BLUE", "WHITE", "BLACK", "UNKNOWN"};
 
 
@@ -34,6 +40,7 @@ const char *COLOR_NAME(size_t index);
 
 color_t tcs3472_determine_color(tcs3472_t* sensor);
 
+color_t tcs3472_determine_single_color(tcs3472_t *sensor);
 /*
  * @brief Checks if sensor is connected
  * @return 0 if successful, 1 on error
