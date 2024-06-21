@@ -237,7 +237,9 @@ color_t tcs3472_determine_color(tcs3472_t *sensor) {
     }
     return WHITE;
   } else {
+    LOG("Bottom color: %f", hsv_colors.v);
     if (hsv_colors.v < 0.15) {
+    
       return BLACK;
     }
     return WHITE;

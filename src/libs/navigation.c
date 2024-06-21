@@ -9,6 +9,7 @@
 #include "measurements.h"
 #include "movement.h"
 #include "VL53L0X.h"
+#include "comms.h"
 #include "src/libs/vtypes.h"
 
 // Initialization of global variables for the movement
@@ -139,9 +140,33 @@ float navig_get_current_heading(void) {
   return current_heading;
 }
 
-void killSwitchScan(position_t *pos, position_t *tPos, tcs3472_t *down_looking) {
-  while (stepper_steps_done() != true) {
+bool killSwitchScan(position_t *pos, position_t *tPos, tcs3472_t *down_looking) {
+  printf("Killswitch\n");
+
+
+  // if (!stepper_steps_done()) {
+  //   printf("Scanning color\n");
+  //   if (tcs3472_determine_color(down_looking) == BLACK) {
+  //     int16_t stepsL = 0, stepsR = 0;
+  //     stepper_get_steps(&stepsL, &stepsR);
+  //     m_stop();
+  //     float rads = pos->di * pi / 180;
+  //     float distance = stepsL * (25.13274 / 1600.0);
+  //     pos->x = tPos->x - distance * cos(rads);
+  //     pos->y = tPos->y - distance * sin(rads);
+
+  //     tPos->x = 9000;
+  //     tPos->y = 9000;
+    
+
+  //   return;
+  // } else {
+  //   killSwitchScan(pos, tPos, down_looking);
+  // }
+  while (!stepper_steps_done()) {
+    printf("Scanning color\n");
     if (tcs3472_determine_color(down_looking) == BLACK) {
+      LOG("BLACK ON THE BOTTOM");
       int16_t stepsL = 0, stepsR = 0;
       stepper_get_steps(&stepsL, &stepsR);
       m_stop();
@@ -152,13 +177,20 @@ void killSwitchScan(position_t *pos, position_t *tPos, tcs3472_t *down_looking) 
 
       tPos->x = 9000;
       tPos->y = 9000;
-      return;
+      m_forward_or(10, backward);
+      pos->x -= 10 * cos(pos->x);
+      pos->y -= 10 * sin(pos->y);
+      while(!stepper_steps_done());
+      m_turn_degrees(90, left);
+      return true;
     }
   }
 
   pos->x = tPos->x;
   pos->y = tPos->y;
+  return false;
 }
+
 
 obstacle_t avoidBorderOrCrater(position_t *pos, tcs3472_t *forward_looking) {
   obstacle_t  obstacle = {pos->x, pos->y, COLOR_COUNT, NONE};
@@ -196,17 +228,30 @@ obstacle_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *f
   for(int i = 0; i < 12; i++){                           //repreats previous process
     vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
     distance[i] = distance_low;
+    position_t tPos = {pos->x, pos->y, 0.0};
     m_turn_degrees(10, right);
+    killSwitchScan(pos, &tPos, down);   
+    direction(&pos->di, -10.0);
+    if(distance[i] < 500){
+      robot_t robot = {pos->x, pos->y, IDLE};
+      obstacle.x = pos->x + (distance[i]+7) / 10 * cos(pos->di);
+      obstacle.y = pos->y + (distance[i]+7) / 10 * sin(pos->di);
+      obstacle.type = NONE;
+      obstacle.color = NONE;
+      send_msg(obstacle, robot);
+      printf("x: %f\n", obstacle.x);
+      printf("y: %f\n", obstacle.y);
+    }
   }
 
   vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
   distance[12] = distance_low;
 
   m_turn_degrees(60, left);                              //repeat process to original position
-  pos->di = direction(&pos->di, 30.0);
+  pos->di = direction(&pos->di, 60.0);
 
   int index = 13;    //the index of the smallest distance
-  distance[index] = 100;
+  distance[index] = 150;
   for(int i = 0; i<13; i++){
     if(distance[i] < DISTANCE_FOR_SCOPE && distance[i] < distance[index]){
       index = i;
@@ -220,7 +265,7 @@ obstacle_t scanScope(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *f
 }
 
 obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down){
-
+  printf("Moving towards hill\n");
   obstacle_t obstacle = {pos->x, pos->y, COLOR_COUNT, NONE};
 
   uint16_t distance_low = 8910, distance_middle = 8910, distance_high = 8910;
@@ -233,8 +278,6 @@ obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
   LOG("Distance to low obstacle: %d \n", distance_low);
 
 
-  // getchar();
-  
   if (distance_low < DISTANCE_FOR_SCOPE){
     
     while (distance_middle > DISTANCE_FOR_COLOR && distance_low > DISTANCE_FOR_COLOR && distance_high > DISTANCE_FOR_COLOR){             //while the distance to the object is too large
@@ -243,12 +286,19 @@ obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
       }
       position_t tPos = {0.0, 0.0, 90.0};
       m_forward_or(0.5, forward);                            //move forward 1cm
-      tPos.x += cos(pos->di);                             //update its position
-      tPos.y += sin(pos->di);
+      tPos.x += cos(pos->di) * 0.5;                             //update its position
+      tPos.y += sin(pos->di) * 0.5;
+      printf("moving forward, should do killswitch\n");
+      bool kill = false;
       while(!stepper_steps_done()){
-        killSwitchScan(pos, &tPos, down);
-        sleep_msec(100);
+        kill = killSwitchScan(pos, &tPos, down);
       }
+      if(kill) {
+        LOG("kill: %d", kill);
+        return obstacle;
+      }
+      sleep_msec(100);
+      
       pos->x=  tPos.x;
       pos->y = tPos.y;
       vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
@@ -258,7 +308,6 @@ obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
       LOG("Distance to high obstacle: %d \n", distance_high);
       LOG("Distance to middle obstacle: %d \n", distance_middle);
       LOG("Distance to low obstacle: %d \n", distance_low);
-      getchar();
 
     }
     // vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);

@@ -66,7 +66,7 @@ double direction(double *di, double ddi);  // updates direction properl
                                            //
 obstacle_t avoidBorderOrCrater(position_t *pos, tcs3472_t *forward_looking);
 obstacle_t scanBorderCrater(position_t *pos, tcs3472_t *forward_looking);
-void killSwitchScan(position_t *pos, position_t *tPos, tcs3472_t *down_looking);
+bool killSwitchScan(position_t *pos, position_t *tPos, tcs3472_t *down_looking);
 
 obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472_t *forward_looking, tcs3472_t *down);
 

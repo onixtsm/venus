@@ -28,8 +28,7 @@ static const float CALIBRATION_MATRIX[] = {50, 70, 100, 150, 200, 0}; // SHOULD 
 #define MAX_DISTANCE_TO_OBSTACLE 4000  // mm (To be tested) // FIX THING IN navig_start_moving
 #define MIN_DISTANCE_TO_OBSTACLE 50    // mm (To be tested)
 #define DISTANCE_FOR_COLOR 20          // mm (To be tested)
-#define DISTANCE_FOR_SCOPE \
-  100  // mm (To be tested)     //note that the last two should probably be divided by 3 for the real thing
+#define DISTANCE_FOR_SCOPE 150  // mm (To be tested)     //note that the last two should probably be divided by 3 for the real thing
 
 #define OBST_SCAN_STEPS 2   // Steps turned to each side (To be tested)
 #define OBST_SCAN_ANGLE 15  // Degrees turned in each step (To be tested)

@@ -212,8 +212,8 @@ int main(void) {
     position_t tPos = {0.0, 0.0, 90.0};
     if (obstacle.type == NONE) {
       float rads = pos.di * pi / 180;
-      tPos.x += 5 * cos(rads);
-      tPos.y += 5 * sin(rads);
+      tPos.x += 10 * cos(rads);
+      tPos.y += 10 * sin(rads);
 
       m_forward_or(10, forward);
       killSwitchScan(&pos, &tPos, color_sensors[DOWN_LOOKING]);
