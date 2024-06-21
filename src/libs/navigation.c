@@ -242,7 +242,7 @@ obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
         break;
       }
       position_t tPos = {0.0, 0.0, 90.0};
-      m_forward_or(1, forward);                            //move forward 1cm
+      m_forward_or(0.5, forward);                            //move forward 1cm
       tPos.x += cos(pos->di);                             //update its position
       tPos.y += sin(pos->di);
       while(!stepper_steps_done()){
@@ -258,16 +258,16 @@ obstacle_t scanHillOrRock(position_t *pos, vl53l0x_t **distance_sensors, tcs3472
       LOG("Distance to high obstacle: %d \n", distance_high);
       LOG("Distance to middle obstacle: %d \n", distance_middle);
       LOG("Distance to low obstacle: %d \n", distance_low);
-      // getchar();
+      getchar();
 
     }
-    vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
-    vl53l0x_read_mean_range(distance_sensors[VL53L0X_MIDDLE], &distance_middle);
-    vl53l0x_read_mean_range(distance_sensors[VL53L0X_HIGH], &distance_high);
+    // vl53l0x_read_mean_range(distance_sensors[VL53L0X_LOW], &distance_low);
+    // vl53l0x_read_mean_range(distance_sensors[VL53L0X_MIDDLE], &distance_middle);
+    // vl53l0x_read_mean_range(distance_sensors[VL53L0X_HIGH], &distance_high);
     if (distance_low >= distance_high - 20 && distance_low <= distance_high + 20){    //readings of distance sensors must be within 20mm of each other to be considered the same
       obstacle.type = HILL;
       LOG("hill\n");
-    } else if (distance_low >= distance_middle - 200 && distance_low <= distance_middle + 200){
+    } else if (distance_low >= distance_middle - 20 && distance_low <= distance_middle + 20){
       obstacle.type = BIG_ROCK;
       LOG("big rock\n");
     } else{
