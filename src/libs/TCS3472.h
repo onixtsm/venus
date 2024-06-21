@@ -17,6 +17,7 @@
 #define TCS3472_REG_G 0x18
 #define TCS3472_REG_B 0x1A
 #define TC3472_REG_ATIME 0x01
+#define TCS3472_CONTROL_REG 0x0F
 
 typedef enum { RED, GREEN, BLUE, WHITE, BLACK, COLOR_COUNT } color_t;
 
@@ -35,6 +36,20 @@ typedef struct {
   uint16_t c, r, g, b;
   size_t integration_time_ns;
 } tcs3472_t;
+
+typedef struct {
+  double h;  // angle in degrees
+  double s;  // a fraction between 0 and 1
+  double v;  // a fraction between 0 and 1
+} hsv_t;
+
+typedef struct {
+  double r;  // angle in degrees
+  double g;  // a fraction between 0 and 1
+  double b;  // a fraction between 0 and 1
+} rgb_t;
+
+hsv_t rgb2hsv(tcs3472_t sensor);
 
 const char *COLOR_NAME(size_t index);
 

@@ -1,7 +1,9 @@
 #include <libpynq.h>
 #include <stdio.h>
+#include <float.h>
 
 #include "../libs/TCS3472.h"
+
 
 int main(void) {
   pynq_init();
@@ -41,10 +43,14 @@ int main(void) {
     }
     tcs3472_read_colors(sensor);
     // tcs3472_read_colors(IIC1, &c1, &r1, &g1, &b1);
-    printf("Senosr 0\n\tc: %d, r: %d, g: %d, b: %d\n\n", sensor->c, sensor->r, sensor->g, sensor->b);
+    hsv_t hsv = rgb2hsv(*sensor);
+    color_t c = tcs3472_determine_color(sensor);
+    printf("Senosr 0\n\tc: %d, r: %d, g: %d, b: %d\n\n", sensor->c >> 4, sensor->r >> 4, sensor->g >> 4, sensor->b >> 4);
+    printf("Senosr 0\n\th: %lf, s: %lf, v: %lf,\n", hsv.h, hsv.s, hsv.v);
+    printf("%s\n", COLOR_NAME(c));
     // printf("Senosr 1\n\tc: %d, r: %d, g: %d, b: %d\n\n", c1, r1, g1, b1);
     printf("========================\n");
-    sleep_msec(500);
+    getchar();
   }
 
   tcs3472_destroy(sensor);

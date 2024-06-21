@@ -23,7 +23,7 @@ static const float CALIBRATION_MATRIX[] = {50, 70, 100, 150, 200, 0}; // SHOULD 
 #define BLACK_TRESHOLD 1600
 #define WHITE_TRESHOLD 16000
 #define TRESHHOLD 0.5
-#define TCS3472_READING_COUNT 7
+#define TCS3472_READING_COUNT 12
 
 #define MAX_DISTANCE_TO_OBSTACLE 4000  // mm (To be tested) // FIX THING IN navig_start_moving
 #define MIN_DISTANCE_TO_OBSTACLE 50    // mm (To be tested)
