@@ -376,9 +376,17 @@ void vl53l0x_read_mean_range(vl53l0x_t *sensor, uint16_t *range) {
       ERROR();
     }
     total += vl53l0x_get_single_optimal_range(sensor);
+
     sleep_msec(75);
   }
-  *range = total / VL53L0X_READING_COUNT - OFFSET;
+  *range = total / VL53L0X_READING_COUNT /*- OFFSET*/;
+  if(sensor->address == 0x69){
+    *range += 5;
+  } else if(sensor->address == 0x68){
+    *range -= 10;
+  } else if(sensor->address == 0x67){
+    *range -= 45;
+  }   //offsets of individual distance sensors. Note that 0x67 (high) is accurate but had setback because of robot angle
 }
 
 void vl53l0x_calibration_dance(vl53l0x_t **distance_sensors, size_t sensor_count, const float calibration_matrix[]) {
